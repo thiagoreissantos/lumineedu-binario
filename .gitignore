@@ -1,0 +1,22 @@
+# Maven
+target/
+!.github/workflows/*.yml
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+# Log
+*.log
+
+# Armazenamento local de arquivos
+**/armazenamento/**/*
+!**.gitkeep
+
+# Sistema de controle de versao
+.git/
