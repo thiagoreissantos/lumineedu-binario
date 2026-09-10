@@ -35,6 +35,8 @@ public class ArquivoResponse {
     private String descricao;
     private Instant dataCriacao;
     private Instant dataAtualizacao;
+    private Instant ultimaLeitura;
+    private Long quantidadeLeituras;
 
     /**
      * Constrói uma resposta a partir de uma entidade do banco de dados.
@@ -54,6 +56,8 @@ public class ArquivoResponse {
                 .descricao(arquivo.getDescricao())
                 .dataCriacao(arquivo.getDataCriacao())
                 .dataAtualizacao(arquivo.getDataAtualizacao())
+                .ultimaLeitura(arquivo.getUltimaLeitura())
+                .quantidadeLeituras(arquivo.getQuantidadeLeituras())
                 .build();
     }
 
@@ -66,6 +70,19 @@ public class ArquivoResponse {
     public String formatarDataCriacao() {
         return dataCriacao != null
                 ? dataCriacao.atZone(ZoneId.of("America/Sao_Paulo"))
+                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+                : null;
+    }
+
+    /**
+     * Converte a data da ultima leitura da entidade para um formato legivel
+     * em formato de timestamp (ISO-8601).
+     *
+     * @return a data da ultima leitura formatada, ou null se nenhuma leitura
+     */
+    public String formatarUltimaLeitura() {
+        return ultimaLeitura != null
+                ? ultimaLeitura.atZone(ZoneId.of("America/Sao_Paulo"))
                         .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
                 : null;
     }
