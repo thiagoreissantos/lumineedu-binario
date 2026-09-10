@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,6 +56,8 @@ class ArquivoServiceTest {
         ArquivoArmazenado armazenado = new ArquivoArmazenado("foto.jpg", "/armazenamento/arquivos/foto.jpg", 100);
         Arquivo arquivo = new Arquivo();
         arquivo.setId(1L);
+        arquivo.setNomeOriginal("foto.jpg");
+        arquivo.setTamanhoBytes(100L);
         when(arquivoStorageService.salvar(dto)).thenReturn(armazenado);
         when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
 
@@ -90,7 +93,9 @@ class ArquivoServiceTest {
         arquivo.setTamanhoBytes(200L);
         arquivo.setCaminhoRelativo("arquivos/origem.png");
         arquivo.setCaminhoFisico("/armazenamento/arquivos/origem.png");
+        arquivo.setQuantidadeLeituras(4L);
         when(arquivoRepository.findById(5L)).thenReturn(Optional.of(arquivo));
+        when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
 
         // Acao
         ArquivoResponse resposta = arquivoService.buscarPorId(5L);
@@ -98,6 +103,81 @@ class ArquivoServiceTest {
         // Assert
         assertThat(resposta.getId()).isEqualTo(5L);
         assertThat(resposta.getCaminhoFisico()).isEqualTo("/armazenamento/arquivos/origem.png");
+        assertThat(resposta.getQuantidadeLeituras()).isEqualTo(5L);
+        assertThat(resposta.getUltimaLeitura()).isNotNull();
+        verify(arquivoRepository, times(1)).save(any(Arquivo.class));
+    }
+
+    @Test
+    void deveIncrementarContadorDeLeiturasAoConsultarPorId() {
+        // Preparacao
+        Arquivo arquivo = novoArquivoComLeituras(7L, 3L, null);
+        Instant antes = Instant.now();
+        when(arquivoRepository.findById(7L)).thenReturn(Optional.of(arquivo));
+        when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
+
+        // Acao
+        ArquivoResponse resposta = arquivoService.buscarPorId(7L);
+
+        // Assert
+        assertThat(resposta.getQuantidadeLeituras()).isEqualTo(4L);
+        assertThat(resposta.getUltimaLeitura()).isNotNull();
+        assertThat(resposta.getUltimaLeitura()).isAfter(antes.minusSeconds(1));
+        verify(arquivoRepository, times(1)).save(any(Arquivo.class));
+    }
+
+    @Test
+    void deveIncrementarContadorACadaConsultaPorId() {
+        // Preparacao
+        Arquivo arquivo = novoArquivoComLeituras(8L, 2L, null);
+        when(arquivoRepository.findById(8L)).thenReturn(Optional.of(arquivo));
+        when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
+
+        // Acao
+        arquivoService.buscarPorId(8L);
+        ArquivoResponse resposta = arquivoService.buscarPorId(8L);
+
+        // Assert
+        assertThat(resposta.getQuantidadeLeituras()).isEqualTo(4L);
+        verify(arquivoRepository, times(2)).save(any(Arquivo.class));
+    }
+
+    @Test
+    void deveIniciarContadorEmUmNaPrimeiraLeitura() {
+        // Preparacao
+        Arquivo arquivo = new Arquivo();
+        arquivo.setId(9L);
+        arquivo.setNomeOriginal("primeiro.png");
+        arquivo.setNomeArquivo("primeiro.png");
+        arquivo.setTipoMime("image/png");
+        arquivo.setDescricao("descricao");
+        arquivo.setTamanhoBytes(100L);
+        arquivo.setCaminhoRelativo("arquivos/primeiro.png");
+        arquivo.setCaminhoFisico("/armazenamento/arquivos/primeiro.png");
+        when(arquivoRepository.findById(9L)).thenReturn(Optional.of(arquivo));
+        when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
+
+        // Acao
+        ArquivoResponse resposta = arquivoService.buscarPorId(9L);
+
+        // Assert
+        assertThat(resposta.getQuantidadeLeituras()).isEqualTo(1L);
+        assertThat(resposta.getUltimaLeitura()).isNotNull();
+    }
+
+    @Test
+    void devePersistirContadorEUltimaLeituraNoBancoDeDadosAoConsultarPorId() {
+        // Preparacao
+        Arquivo arquivo = novoArquivoComLeituras(10L, 1L, null);
+        when(arquivoRepository.findById(10L)).thenReturn(Optional.of(arquivo));
+
+        // Acao
+        arquivoService.buscarPorId(10L);
+
+        // Assert
+        assertThat(arquivo.getQuantidadeLeituras()).isEqualTo(2L);
+        assertThat(arquivo.getUltimaLeitura()).isNotNull();
+        verify(arquivoRepository, times(1)).save(any(Arquivo.class));
     }
 
     @Test
@@ -137,7 +217,7 @@ class ArquivoServiceTest {
         when(arquivoRepository.findAll(any(Pageable.class))).thenReturn(paginaArquivos);
 
         // Acao
-        Page<ArquivoResponse> pagina = arquivoService.listar(any(Pageable.class));
+        Page<ArquivoResponse> pagina = arquivoService.listar(PageRequest.of(0, 10));
 
         // Assert
         assertThat(pagina.getTotalElements()).isEqualTo(1L);
@@ -154,6 +234,14 @@ class ArquivoServiceTest {
         arquivo.setTamanhoBytes(100L);
         arquivo.setCaminhoRelativo("arquivos/" + nome);
         arquivo.setCaminhoFisico("/armazenamento/arquivos/" + nome);
+        return arquivo;
+    }
+
+    private static Arquivo novoArquivoComLeituras(Long id, Long leituras, Instant ultimaLeitura) {
+        Arquivo arquivo = novoArquivo("porId.png");
+        arquivo.setId(id);
+        arquivo.setQuantidadeLeituras(leituras);
+        arquivo.setUltimaLeitura(ultimaLeitura);
         return arquivo;
     }
 }

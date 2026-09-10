@@ -1,5 +1,6 @@
 package com.lumineedu.binario.service;
 
+import java.time.Instant;
 import java.util.List;
 
 import com.lumineedu.binario.dto.ArquivoDTO;
@@ -46,6 +47,7 @@ public class ArquivoService {
                 armazenado.getCaminhoRelativo(),
                 armazenado.getCaminhoFisico(),
                 armazenado.getTamanhoBytes());
+        arquivo.setQuantidadeLeituras(0L);
 
         Arquivo salvo = arquivoRepository.save(arquivo);
         return ArquivoResponse.de(salvo);
@@ -58,11 +60,25 @@ public class ArquivoService {
      * @return a resposta do arquivo encontrado
      * @throws ArquivoNaoEncontradoException se o arquivo nao existe
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public ArquivoResponse buscarPorId(Long id) {
         Arquivo arquivo = arquivoRepository.findById(id)
                 .orElseThrow(ArquivoNaoEncontradoException::new);
+        registrarLeitura(arquivo);
         return ArquivoResponse.de(arquivo);
+    }
+
+    /**
+     * Registra uma leitura (recuperacao) do arquivo: atualiza o timestamp
+     * da ultima leitura e incrementa o contador de leituras, persistindo os
+     * metadados atualizados no banco de dados.
+     *
+     * @param arquivo a entidade a ser atualizada
+     */
+    private void registrarLeitura(Arquivo arquivo) {
+        Instant agora = Instant.now();
+        arquivo.registrarLeitura(agora);
+        arquivoRepository.save(arquivo);
     }
 
     /**
@@ -122,7 +138,7 @@ public class ArquivoService {
         }
 
         arquivoRepository.delete(arquivo);
-        return new ArquivoResponse(id, null, null, null, null, null, null, null, null, null);
+        return new ArquivoResponse(id, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     /**

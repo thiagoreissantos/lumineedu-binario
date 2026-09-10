@@ -64,6 +64,21 @@ public class Arquivo implements Serializable {
     private Instant dataAtualizacao;
 
     /**
+     * Momento (timestamp) da ultima vez que o arquivo foi lido
+     * (recuperado) via uma solicitação de recuperacao. Nulo ate a
+     * primeira leitura.
+     */
+    @Column(name = "ultima_leitura")
+    private Instant ultimaLeitura;
+
+    /**
+     * Quantidade de vezes que o arquivo foi acessado (recuperado).
+     * Comeca em 0 e e incrementada a cada leitura.
+     */
+    @Column(name = "quantidade_leituras")
+    private Long quantidadeLeituras;
+
+    /**
      * Copia os campos relevantes da solicitacao para a entidade.
      *
      * @param dto a solicitacao de criacao do arquivo
@@ -86,6 +101,17 @@ public class Arquivo implements Serializable {
         this.caminhoRelativo = caminhoRelativo;
         this.caminhoFisico = caminhoFisico;
         this.tamanhoBytes = tamanhoBytes;
+    }
+
+    /**
+     * Registra uma leitura (recuperacao) do arquivo: atualiza o timestamp
+     * da ultima leitura e incrementa o contador de leituras.
+     *
+     * @param agora instante corrente da leitura
+     */
+    public void registrarLeitura(Instant agora) {
+        this.ultimaLeitura = agora;
+        this.quantidadeLeituras = (this.quantidadeLeituras != null ? this.quantidadeLeituras : 0L) + 1L;
     }
 
     @PrePersist

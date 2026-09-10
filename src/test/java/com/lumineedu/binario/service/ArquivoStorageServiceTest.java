@@ -75,7 +75,6 @@ class ArquivoStorageServiceTest {
         when(storageProperties.getDiretorioCompleto()).thenReturn(diretorio.toString());
         when(securityProperties.getMimeTypeosPermitidos()).thenReturn(List.of("image/png", "image/jpeg"));
         when(storageProperties.getMaxTamanhoBytes()).thenReturn(52428800L);
-        when(storageProperties.getMaxTamanhoHdBytes()).thenReturn(1073741824L);
 
         // Acao e assert
         assertThatThrownBy(() -> arquivoStorageService.salvar(dto))
@@ -89,7 +88,6 @@ class ArquivoStorageServiceTest {
         ArquivoDTO dto = new ArquivoDTO("grande.png", "image/png", "descricao", imagem.conteudoBase64);
         long limite = imagem.tamanhoBytes - 10;
         when(storageProperties.getMaxTamanhoBytes()).thenReturn(limite);
-        when(securityProperties.getMimeTypeosPermitidos()).thenReturn(List.of("image/png"));
 
         // Acao e assert
         assertThatThrownBy(() -> arquivoStorageService.salvar(dto))
@@ -102,9 +100,7 @@ class ArquivoStorageServiceTest {
         ImagemTeste.ImagemCriacao imagem = ImagemTeste.criarBase64("dup.png", 10, 10, Color.WHITE, "png");
         ArquivoDTO dto = new ArquivoDTO("dup.png", "image/png", "descricao", imagem.conteudoBase64);
         when(storageProperties.getDiretorioCompleto()).thenReturn(diretorio.toString());
-        when(securityProperties.getMimeTypeosPermitidos()).thenReturn(List.of("image/png"));
         when(storageProperties.getMaxTamanhoBytes()).thenReturn(52428800L);
-        when(storageProperties.getMaxTamanhoHdBytes()).thenReturn(1073741824L);
         Files.write(diretorio.resolve("dup.png"), "conteudo existente".getBytes());
 
         // Acao e assert
