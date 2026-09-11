@@ -1,0 +1,93 @@
+name: CI/CD - Producao
+
+# Pipeline de producao: valida, empacota e publica a imagem no GHCR.
+# Trigger: push na branch "main" (geralmente a partir de um release tag).
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-deploy-prod:
+    runs-on: ubuntu-latest
+
+    # Inicia o daemon do Docker (servico nativo do runner) para o passo de deploy.
+    services:
+      - name: docker
+        image: docker:24-dind
+        ports:
+          - 2375:2375
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Cache de dependencias Maven (.m2)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-deps-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-deps-
+
+      - name: Executar testes unitarios e de integracao
+        run: mvn clean test
+
+      - name: Empacotar o jar
+        run: mvn clean package -DskipTests
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determinar a versao da imagem
+        id: version
+        run: |
+          if [ "${{ github.ref }}" = "refs/tags/${GITHUB_REF_NAME}" ]; then
+            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.0.1-SNAPSHOT" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build e publicacao da imagem no GHCR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          load: false
+          tags: |
+            ghcr.io/${{ github.repository }}/lumineedu-binario:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository }}/lumineedu-binario:latest
+          labels: |
+            maintainers=${{ github.repository_owner }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+
+      - name: Deploy (subir a aplicacao com o profile prod)
+        # Roda o container apenas quando o banco de dados estiver configurado.
+        if: ${{ secrets.DB_URL != '' }}
+        run: |
+          docker run -d --name lumineedu-binario-prod \
+            -p 8081:8080 \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            -e DB_URL="${{ secrets.DB_URL }}" \
+            -e DB_USERNAME="${{ secrets.DB_USERNAME }}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+            ghcr.io/${{ github.repository }}/lumineedu-binario:${{ steps.version.outputs.version }}

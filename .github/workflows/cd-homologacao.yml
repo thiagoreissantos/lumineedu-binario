@@ -1,0 +1,91 @@
+name: CI/CD - Homologacao
+
+# Pipeline de homologacao: valida, empacota e publica a imagem no GHCR.
+# Trigger: push e pull request na branch "homologacao".
+on:
+  push:
+    branches:
+      - homologacao
+  pull_request:
+    branches:
+      - homologacao
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-deploy-homol:
+    runs-on: ubuntu-latest
+
+    # Inicia o daemon do Docker (servico nativo do runner) para o passo de deploy.
+    services:
+      - name: docker
+        image: docker:24-dind
+        ports:
+          - 2375:2375
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Cache de dependencias Maven (.m2)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-deps-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-deps-
+
+      - name: Executar testes unitarios e de integracao
+        run: mvn clean test
+
+      - name: Empacotar o jar
+        run: mvn clean package -DskipTests
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determinar o SHA do commit
+        id: sha
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build e publicacao da imagem no GHCR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          load: false
+          tags: |
+            ghcr.io/${{ github.repository }}/lumineedu-binario:homol-latest
+            ghcr.io/${{ github.repository }}/lumineedu-binario:${{ steps.sha.outputs.sha }}
+          labels: |
+            maintainers=${{ github.repository_owner }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+
+      - name: Deploy (subir a aplicacao com o profile homol)
+        # Roda o container apenas quando o banco de dados estiver configurado.
+        if: ${{ secrets.DB_URL != '' }}
+        run: |
+          docker run -d --name lumineedu-binario-homol \
+            -p 8080:8080 \
+            -e SPRING_PROFILES_ACTIVE=homol \
+            -e DB_URL="${{ secrets.DB_URL }}" \
+            -e DB_USERNAME="${{ secrets.DB_USERNAME }}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+            ghcr.io/${{ github.repository }}/lumineedu-binario:homol-latest
