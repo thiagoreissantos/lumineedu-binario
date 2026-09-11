@@ -1,0 +1,17 @@
+# Evita copiar cache de build e metadados para a imagem Docker.
+target/
+.git/
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Arquivos de logs e armazenamento local.
+*.log
+**/armazenamento/**/*
+!**.gitkeep
+
+# Workflow de CI/CD (nao e necessario na imagem).
+.github/
