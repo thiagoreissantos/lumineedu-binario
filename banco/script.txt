@@ -1,0 +1,141 @@
+-- =====================================================================
+-- Script de inicializacao do banco de dados PostgreSQL
+-- Projeto: lumineedu-binario
+-- Idioma:  portugues do Brasil (todos os comentarios e mensagens em pt-BR)
+--
+-- Este script cria:
+--   1. O banco de dados "lumineedu_binario".
+--   2. O usuario de aplicacao "lumineedu" e suas permissoes.
+--   3. A tabela "tb_arquivo":     metadados dos arquivos binarios.
+--   4. A tabela "tb_usuario":     usuarios/roles da aplicacao.
+--
+-- Como executar:
+--   psql -U postgres -d postgres -f banco/script.txt
+--
+-- Observacao sobre a locale:
+--   As linhas LC_COLLATE e LC_CTYPE forcam a locale "pt_BR.UTF-8".
+--   Se essa locale nao estiver instalada no servidor PostgreSQL,
+--   remova essas duas linhas e mantenha apenas ENCODING = 'UTF8'.
+-- =====================================================================
+
+
+-- ---------------------------------------------------------------------
+-- PASSO 1 - Criar o banco de dados (rodar contra o banco padrao).
+-- ---------------------------------------------------------------------
+CREATE DATABASE lumineedu_binario
+    WITH
+        OWNER           = postgres
+        ENCODING        = 'UTF8'
+        LC_COLLATE      = 'pt_BR.UTF-8'
+        LC_CTYPE        = 'pt_BR.UTF-8'
+        TEMPLATE        = template0;
+
+
+-- ---------------------------------------------------------------------
+-- PASSO 2 - Criar o usuario de aplicacao e dar permissao no banco.
+-- ---------------------------------------------------------------------
+-- O usuario "lumineedu" corresponde ao spring.datasource.username
+-- configurado em src/main/resources/application.properties.
+CREATE USER lumineedu
+    WITH PASSWORD = 'lumineedu'
+    LOGIN
+    CREATEDB;
+
+GRANT ALL PRIVILEGES ON DATABASE lumineedu_binario TO lumineedu;
+
+
+-- Entrar no banco recém-criado para criar os objetos (tabelas).
+\connect lumineedu_binario
+
+
+-- Dar permissao sobre o esquema public ao usuario da aplicacao.
+GRANT ALL ON SCHEMA public TO lumineedu;
+
+
+-- ---------------------------------------------------------------------
+-- PASSO 3 - Tabela "tb_arquivo" (metadados dos arquivos binarios).
+-- Fonte: entidade Arquivo (src/.../entity/Arquivo.java) e data.sql.
+-- ---------------------------------------------------------------------
+CREATE TABLE tb_arquivo (
+    id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome_original       VARCHAR(500)  NOT NULL,
+    nome_arquivo        VARCHAR(500)  NOT NULL,
+    caminho_relativo    VARCHAR(1000) NOT NULL,
+    caminho_fisico      VARCHAR(1000) NOT NULL,
+    tamanho_bytes       BIGINT        NOT NULL,
+    tipo_mime           VARCHAR(255)  NOT NULL,
+    descricao           VARCHAR(1000),
+    data_criacao        TIMESTAMP     NOT NULL,
+    data_atualizacao    TIMESTAMP     NOT NULL,
+    ativo               BOOLEAN       NOT NULL,
+    ultima_leitura      TIMESTAMP,
+    quantidade_leituras BIGINT,
+    data_desativacao    TIMESTAMP
+);
+
+COMMENT ON TABLE  tb_arquivo IS 'Metadados dos arquivos binarios armazenados em disco local.';
+COMMENT ON COLUMN tb_arquivo.id               IS 'Chave primaria autoincrementavel do registro.';
+COMMENT ON COLUMN tb_arquivo.nome_original    IS 'Nome original do arquivo enviado pelo cliente.';
+COMMENT ON COLUMN tb_arquivo.nome_arquivo     IS 'Nome do arquivo no sistema de armazenamento.';
+COMMENT ON COLUMN tb_arquivo.caminho_relativo IS 'Caminho relativo do arquivo dentro do armazenamento.';
+COMMENT ON COLUMN tb_arquivo.caminho_fisico   IS 'Caminho fisico completo do arquivo no disco.';
+COMMENT ON COLUMN tb_arquivo.tamanho_bytes    IS 'Tamanho do arquivo em bytes.';
+COMMENT ON COLUMN tb_arquivo.tipo_mime        IS 'Tipo MIME do arquivo (ex.: image/jpeg).';
+COMMENT ON COLUMN tb_arquivo.descricao        IS 'Descricao livre do arquivo.';
+COMMENT ON COLUMN tb_arquivo.data_criacao     IS 'Momento em que o registro foi criado (imutavel).';
+COMMENT ON COLUMN tb_arquivo.data_atualizacao IS 'Momento da ultima atualizacao do registro (imutavel apos a criacao).';
+COMMENT ON COLUMN tb_arquivo.ativo             IS 'Indica se o arquivo esta ativo no sistema. Vira falso quando o arquivo for limpo.';
+COMMENT ON COLUMN tb_arquivo.ultima_leitura    IS 'Ultimo momento em que o arquivo foi recuperado.';
+COMMENT ON COLUMN tb_arquivo.quantidade_leituras IS 'Quantidade de vezes que o arquivo foi acessado.';
+COMMENT ON COLUMN tb_arquivo.data_desativacao  IS 'Momento em que o arquivo foi desativado pela limpeza.';
+
+-- Index para consultas frequentes de arquivo ativo.
+CREATE INDEX idx_tb_arquivo_ativo ON tb_arquivo (ativo);
+CREATE INDEX idx_tb_arquivo_nome_original ON tb_arquivo (nome_original);
+
+
+-- ---------------------------------------------------------------------
+-- PASSO 4 - Tabela "tb_usuario" (usuarios/roles da aplicacao).
+-- ---------------------------------------------------------------------
+-- Esta tabela representa os usuarios (roles) da aplicacao. O token de
+-- autenticacao fixo da aplicacao usa a autoridade "ROLE_USUARIO"; os
+-- usuarios cadastrados nesta tabela permitem a gestao de perfis reais
+-- (ROLE_USUARIO / ROLE_ADMINISTRADOR). A senha nunca deve ser gravada
+-- em texto claro - deve ser um hash bcrypt.
+CREATE TABLE tb_usuario (
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    login           VARCHAR(100) NOT NULL,
+    nome_completo   VARCHAR(255),
+    email           VARCHAR(255) NOT NULL,
+    senha_hash      VARCHAR(255) NOT NULL,
+    perfil          VARCHAR(50)  NOT NULL DEFAULT 'ROLE_USUARIO',
+    ativo           BOOLEAN      NOT NULL DEFAULT TRUE,
+    data_criacao    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP
+);
+
+COMMENT ON TABLE  tb_usuario   IS 'Usuarios (roles) da aplicacao lumineedu-binario.';
+COMMENT ON COLUMN tb_usuario.id            IS 'Chave primaria autoincrementavel do usuario.';
+COMMENT ON COLUMN tb_usuario.login         IS 'Nome de usuario (login). Nao pode ser repetido.';
+COMMENT ON COLUMN tb_usuario.nome_completo IS 'Nome completo do usuario.';
+COMMENT ON COLUMN tb_usuario.email         IS 'Endereco de email do usuario. Nao pode ser repetido.';
+COMMENT ON COLUMN tb_usuario.senha_hash    IS 'Hash da senha do usuario (nunca gravar a senha em texto claro).';
+COMMENT ON COLUMN tb_usuario.perfil        IS 'Perfil/role do usuario (ex.: ROLE_USUARIO, ROLE_ADMINISTRADOR).';
+COMMENT ON COLUMN tb_usuario.ativo          IS 'Indica se o usuario esta habilitado no sistema.';
+COMMENT ON COLUMN tb_usuario.data_criacao   IS 'Momento em que o usuario foi criado.';
+COMMENT ON COLUMN tb_usuario.data_atualizacao IS 'Momento da ultima alteracao do usuario.';
+
+-- Indices unicos para garantir a unicidade do login e do email.
+CREATE UNIQUE INDEX uk_tb_usuario_login    ON tb_usuario (login);
+CREATE UNIQUE INDEX uk_tb_usuario_email    ON tb_usuario (email);
+
+-- Index para consultas de usuarios ativos.
+CREATE INDEX idx_tb_usuario_ativo ON tb_usuario (ativo);
+
+
+-- ---------------------------------------------------------------------
+-- Fim do script.
+-- ---------------------------------------------------------------------
+-- Voltar ao banco padrao para encerrar a sessao com as permissoes
+-- do banco ja transferidas para o usuario.
+\connect postgres
