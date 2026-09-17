@@ -43,7 +43,7 @@ ENV JAVA_OPTS="-Xmx512m -Xss64m"
 EXPOSE 8080
 
 # Copia o jar empacotado pelo estagio de build.
-COPY --from=builder /workspace/lumineedu-binario.jar /app/lumineedu-binario.jar
+COPY --from=builder /workspace/target/lumineedu-binario.jar /app/lumineedu-binario.jar
 
 # Executa a aplicacao como o usuario nao-root.
 USER lumineedu
