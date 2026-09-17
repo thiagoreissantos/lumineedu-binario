@@ -136,6 +136,16 @@ CREATE INDEX idx_tb_usuario_ativo ON tb_usuario (ativo);
 
 ALTER DATABASE lumineedu_binario OWNER TO lumineedu;
 
+GRANT USAGE ON SCHEMA public TO lumineedu;
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON ALL TABLES IN SCHEMA public
+TO lumineedu;
+
+GRANT USAGE, SELECT, UPDATE
+ON ALL SEQUENCES IN SCHEMA public
+TO lumineedu;
+
 
 -- ---------------------------------------------------------------------
 -- Fim do script.
