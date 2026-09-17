@@ -47,4 +47,4 @@ COPY --from=builder /workspace/lumineedu-binario.jar /app/lumineedu-binario.jar
 
 # Executa a aplicacao como o usuario nao-root.
 USER lumineedu
-ENTRYPOINT ["java", "${JAVA_OPTS}", "-jar", "/app/lumineedu-binario.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/lumineedu-binario.jar"]
