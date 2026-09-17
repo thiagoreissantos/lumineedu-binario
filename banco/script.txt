@@ -133,6 +133,10 @@ CREATE UNIQUE INDEX uk_tb_usuario_email    ON tb_usuario (email);
 CREATE INDEX idx_tb_usuario_ativo ON tb_usuario (ativo);
 
 
+
+ALTER DATABASE lumineedu_binario OWNER TO lumineedu;
+
+
 -- ---------------------------------------------------------------------
 -- Fim do script.
 -- ---------------------------------------------------------------------
