@@ -2,12 +2,19 @@ package com.lumineedu.binario;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /**
  * Classe de entrada da aplicacao lumineedu-binario.
  * Responsavel por iniciar o contexto de aplicacao Spring Boot.
  */
-@SpringBootApplication
+@SpringBootApplication(
+	    exclude = {
+	        UserDetailsServiceAutoConfiguration.class
+	    }
+	)
+	@ConfigurationPropertiesScan
 public class LumineEduBinarioApplication {
 
     /**

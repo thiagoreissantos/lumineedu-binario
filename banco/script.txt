@@ -37,7 +37,7 @@ CREATE DATABASE lumineedu_binario
 -- O usuario "lumineedu" corresponde ao spring.datasource.username
 -- configurado em src/main/resources/application.properties.
 CREATE USER lumineedu
-    WITH PASSWORD = 'lumineedu'
+    WITH PASSWORD 'lumineedu'
     LOGIN
     CREATEDB;
 

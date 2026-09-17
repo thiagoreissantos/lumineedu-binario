@@ -3,25 +3,24 @@ package com.lumineedu.binario.security;
 import java.io.IOException;
 import java.util.List;
 
-import jakarta.servlet.DispatcherType;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import lombok.RequiredArgsConstructor;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.lumineedu.binario.config.SecurityProperties;
 
 import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Configuracao do filtro de autenticacao por token fixo.
@@ -39,21 +38,10 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 public class TokenFilterConfig {
 
     private final SecurityProperties properties;
-
-    /**
-     * Registra o filtro de token como um filtro de servlet global, com a
-     * maior precedencia para ser executado antes da cadeia de seguranca.
-     *
-     * @param filtroToken o filtro de token
-     * @return o registro do filtro
-     */
+    
     @Bean
-    public FilterRegistrationBean<TokenFilter> filtroTokenRegistration(TokenFilter filtroToken) {
-        FilterRegistrationBean<TokenFilter> registration = new FilterRegistrationBean<>(filtroToken);
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
-        registration.addUrlPatterns("=/*");
-        registration.setDispatcherTypes(DispatcherType.REQUEST);
-        return registration;
+    public TokenFilter tokenFilter() {
+        return new TokenFilter(properties);
     }
 
     /**
@@ -67,17 +55,12 @@ public class TokenFilterConfig {
      * {@link jakarta.servlet.http.HttpServletRequest} e uma
      * {@link ServletRequest}).</p>
      */
-    static class TokenFilter implements Filter, Ordered {
+    public static class TokenFilter implements Filter {
 
         private final SecurityProperties properties;
 
         public TokenFilter(SecurityProperties properties) {
             this.properties = properties;
-        }
-
-        @Override
-        public int getOrder() {
-            return Ordered.HIGHEST_PRECEDENCE + 10;
         }
 
         @Override
