@@ -62,6 +62,9 @@ public class Arquivo implements Serializable {
 
     @Column(updatable = false)
     private Instant dataAtualizacao;
+    
+    @Column(nullable = false)
+    private Boolean ativo;
 
     /**
      * Momento (timestamp) da ultima vez que o arquivo foi lido

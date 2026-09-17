@@ -48,6 +48,7 @@ public class ArquivoService {
                 armazenado.getCaminhoFisico(),
                 armazenado.getTamanhoBytes());
         arquivo.setQuantidadeLeituras(0L);
+        arquivo.setAtivo(true);
 
         Arquivo salvo = arquivoRepository.save(arquivo);
         return ArquivoResponse.de(salvo);
