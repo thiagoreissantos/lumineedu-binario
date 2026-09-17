@@ -53,7 +53,7 @@ class ArquivoStorageServiceTest {
         ImagemTeste.ImagemCriacao imagem = ImagemTeste.criarBase64("foto.jpg", 10, 10, Color.WHITE, "png");
         ArquivoDTO dto = new ArquivoDTO("foto.jpg", "image/png", "descricao", imagem.conteudoBase64);
         when(storageProperties.getDiretorioCompleto()).thenReturn(diretorio.toString());
-        when(securityProperties.getMimeTypeosPermitidos()).thenReturn(List.of("image/png", "image/jpeg"));
+        when(securityProperties.getMimeTiposPermitidos()).thenReturn(List.of("image/png", "image/jpeg"));
         when(storageProperties.getMaxTamanhoBytes()).thenReturn(52428800L);
         when(storageProperties.getMaxTamanhoHdBytes()).thenReturn(1073741824L);
 
@@ -73,7 +73,7 @@ class ArquivoStorageServiceTest {
         ImagemTeste.ImagemCriacao imagem = ImagemTeste.criarBase64("video.mp4", 10, 10, Color.WHITE, "png");
         ArquivoDTO dto = new ArquivoDTO("video.mp4", "video/mp4", "descricao", imagem.conteudoBase64);
         when(storageProperties.getDiretorioCompleto()).thenReturn(diretorio.toString());
-        when(securityProperties.getMimeTypeosPermitidos()).thenReturn(List.of("image/png", "image/jpeg"));
+        when(securityProperties.getMimeTiposPermitidos()).thenReturn(List.of("image/png", "image/jpeg"));
         when(storageProperties.getMaxTamanhoBytes()).thenReturn(52428800L);
 
         // Acao e assert

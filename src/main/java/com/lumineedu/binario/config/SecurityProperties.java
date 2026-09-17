@@ -27,7 +27,7 @@ public class SecurityProperties {
         this.tokensValidos = tokensValidos;
     }
 
-    public List<String> getMimeTypeosPermitidos() {
+    public List<String> getMimeTiposPermitidos() {
         return mimeTiposPermitidos;
     }
 

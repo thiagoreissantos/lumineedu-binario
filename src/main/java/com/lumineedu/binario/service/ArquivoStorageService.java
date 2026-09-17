@@ -55,7 +55,7 @@ public class ArquivoStorageService {
         if (!eTipoMimePermitido(dto.getTipoMime())) {
             throw new ArquivoInvalidoException(
                     "tipo mime nao permitido. Tipos permitidos: "
-                            + securityProperties.getMimeTypeosPermitidos());
+                            + securityProperties.getMimeTiposPermitidos());
         }
 
         // Processa a imagem: se for imagem e exceder o limite do HD, redimensiona mantendo as proporcoes
@@ -125,7 +125,7 @@ public class ArquivoStorageService {
      * @return true se o tipo mime e permitido
      */
     public boolean eTipoMimePermitido(String tipoMime) {
-        return securityProperties.getMimeTypeosPermitidos().contains(tipoMime.toLowerCase());
+        return securityProperties.getMimeTiposPermitidos().contains(tipoMime.toLowerCase());
     }
 
     /**
