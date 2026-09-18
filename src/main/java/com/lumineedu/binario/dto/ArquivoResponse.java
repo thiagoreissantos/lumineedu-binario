@@ -37,6 +37,8 @@ public class ArquivoResponse {
     private Instant dataAtualizacao;
     private Instant ultimaLeitura;
     private Long quantidadeLeituras;
+    private Boolean ativo;
+    private Instant dataDesativacao;
 
     /**
      * Constrói uma resposta a partir de uma entidade do banco de dados.
@@ -58,6 +60,8 @@ public class ArquivoResponse {
                 .dataAtualizacao(arquivo.getDataAtualizacao())
                 .ultimaLeitura(arquivo.getUltimaLeitura())
                 .quantidadeLeituras(arquivo.getQuantidadeLeituras())
+                .ativo(arquivo.isAtivo())
+                .dataDesativacao(arquivo.getDataDesativacao())
                 .build();
     }
 
@@ -83,6 +87,20 @@ public class ArquivoResponse {
     public String formatarUltimaLeitura() {
         return ultimaLeitura != null
                 ? ultimaLeitura.atZone(ZoneId.of("America/Sao_Paulo"))
+                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+                : null;
+    }
+
+    /**
+     * Converte a data de desativacao da entidade para um formato legivel
+     * em formato de timestamp (ISO-8601). Retorna null se o registro
+     * nao foi desativado.
+     *
+     * @return a data de desativacao formatada, ou null se nao desativado
+     */
+    public String formatarDataDesativacao() {
+        return dataDesativacao != null
+                ? dataDesativacao.atZone(ZoneId.of("America/Sao_Paulo"))
                         .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
                 : null;
     }

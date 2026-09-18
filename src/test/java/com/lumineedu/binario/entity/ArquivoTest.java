@@ -70,4 +70,32 @@ class ArquivoTest {
         // Assert
         assertThat(arquivo.getQuantidadeLeituras()).isEqualTo(1L);
     }
+
+    @Test
+    void deveExporAtivoEDataDesativacao() {
+        // Preparacao
+        Arquivo arquivo = new Arquivo();
+        arquivo.setAtivo(true);
+        Instant dataDesativacao = Instant.parse("2024-01-01T00:00:00Z");
+        arquivo.setDataDesativacao(dataDesativacao);
+
+        // Assert
+        assertThat(arquivo.isAtivo()).isTrue();
+        assertThat(arquivo.getDataDesativacao()).isEqualTo(dataDesativacao);
+    }
+
+    @Test
+    void devePermitirDesativacaoDeRegistro() {
+        // Preparacao: registro ativo sem data de desativacao
+        Arquivo arquivo = new Arquivo();
+        arquivo.setAtivo(true);
+
+        // Acao: desativacao
+        arquivo.setAtivo(false);
+        arquivo.setDataDesativacao(Instant.now());
+
+        // Assert
+        assertThat(arquivo.isAtivo()).isFalse();
+        assertThat(arquivo.getDataDesativacao()).isNotNull();
+    }
 }

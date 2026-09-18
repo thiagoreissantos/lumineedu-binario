@@ -23,6 +23,22 @@ public class StorageProperties {
     private long maxTamanhoHdBytes = 1073741824L;
 
     /**
+     * Periodo maximo (em dias) durante o qual um arquivo deve ser acessado
+     * (recuperado) para nao ser considerado candidato a limpeza. Arquivos
+     * sem acesso (ou com ultima leitura) mais antigos que este periodo
+     * passam a ser excluidos pelo Job de limpeza.
+     * <p>
+     * Valor base por padrao: 730 dias (2 anos).
+     */
+    private long maxIdleDias = 730L;
+
+    /**
+     * Hora (0-23) de execucao do Job de limpeza periodica (1x por dia),
+     * no fuso America/Sao_Paulo.
+     */
+    private int horaExecucaoLimpeza = 3;
+
+    /**
      * Retorna o caminho completo (raiz + subdiretorio) onde os arquivos
      * serao gravados.
      *
@@ -67,5 +83,21 @@ public class StorageProperties {
 
     public void setMaxTamanhoHdBytes(long maxTamanhoHdBytes) {
         this.maxTamanhoHdBytes = maxTamanhoHdBytes;
+    }
+
+    public long getMaxIdleDias() {
+        return maxIdleDias;
+    }
+
+    public void setMaxIdleDias(long maxIdleDias) {
+        this.maxIdleDias = maxIdleDias;
+    }
+
+    public int getHoraExecucaoLimpeza() {
+        return horaExecucaoLimpeza;
+    }
+
+    public void setHoraExecucaoLimpeza(int horaExecucaoLimpeza) {
+        this.horaExecucaoLimpeza = horaExecucaoLimpeza;
     }
 }
