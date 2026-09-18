@@ -10,7 +10,9 @@ INSERT INTO tb_arquivo (
     tipo_mime,
     descricao,
     data_criacao,
-    data_atualizacao
+    data_atualizacao,
+    ativo,
+    data_desativacao
 ) VALUES
     ('foto_exemplo.jpg',
      'foto_exemplo.jpg',
@@ -20,7 +22,9 @@ INSERT INTO tb_arquivo (
      'image/jpeg',
      'Exemplo de arquivo de imagem',
      NOW(),
-     NOW()),
+     NOW(),
+     true,
+     NULL),
     ('documento.png',
      'documento.png',
      'arquivos/documento.png',
@@ -29,4 +33,6 @@ INSERT INTO tb_arquivo (
      'image/png',
      'Exemplo de arquivo PNG',
      NOW(),
-     NOW());
+     NOW(),
+     true,
+     NULL);

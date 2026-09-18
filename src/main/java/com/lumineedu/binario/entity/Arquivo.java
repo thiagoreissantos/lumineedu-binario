@@ -63,8 +63,27 @@ public class Arquivo implements Serializable {
     @Column(updatable = false)
     private Instant dataAtualizacao;
     
-    @Column(nullable = false)
-    private Boolean ativo;
+
+    /**
+     * Indica se o registro ainda esta ativo no sistema.
+     * <p>
+     * Um arquivo passa a ser inativo quando o Job de limpeza periodicamente
+     * exclui seu conteudo fisico por nao ser acessado ha mais de um periodo
+     * configuravel. Uma vez inativo, o registro permanece no banco (para
+     * fins de auditoria) mas ja nao e recuperavel via API.
+     * <p>
+     * Obrigatorio: e inicializado como {@code true} no momento da primeira
+     * gravacao (via {@link #prePersist()}).
+     */
+    @Column(nullable = false, updatable = false)
+    private boolean ativo;
+
+    /**
+     * Momento (timestamp) em que o registro foi desativado pelo Job de
+     * limpeza. Nulo enquanto o registro permanecer ativo.
+     */
+    @Column(updatable = false)
+    private Instant dataDesativacao;
 
     /**
      * Momento (timestamp) da ultima vez que o arquivo foi lido

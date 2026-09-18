@@ -48,6 +48,8 @@ public class ArquivoService {
                 armazenado.getCaminhoFisico(),
                 armazenado.getTamanhoBytes());
         arquivo.setQuantidadeLeituras(0L);
+        // Novo registro entra como ativo; passa a ser inativo apenas apos o
+        // Job de limpeza excluir o conteudo fisico (se nao acessado).
         arquivo.setAtivo(true);
 
         Arquivo salvo = arquivoRepository.save(arquivo);
@@ -65,6 +67,9 @@ public class ArquivoService {
     public ArquivoResponse buscarPorId(Long id) {
         Arquivo arquivo = arquivoRepository.findById(id)
                 .orElseThrow(ArquivoNaoEncontradoException::new);
+        if (!arquivo.isAtivo()) {
+            throw new ArquivoNaoEncontradoException();
+        }
         registrarLeitura(arquivo);
         return ArquivoResponse.de(arquivo);
     }
@@ -139,7 +144,7 @@ public class ArquivoService {
         }
 
         arquivoRepository.delete(arquivo);
-        return new ArquivoResponse(id, null, null, null, null, null, null, null, null, null, null, null);
+        return new ArquivoResponse(id, null, null, null, null, null, null, null, null, null, null, null, false, null);
     }
 
     /**

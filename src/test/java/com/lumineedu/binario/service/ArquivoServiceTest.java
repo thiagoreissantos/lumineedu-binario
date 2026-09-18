@@ -94,6 +94,7 @@ class ArquivoServiceTest {
         arquivo.setCaminhoRelativo("arquivos/origem.png");
         arquivo.setCaminhoFisico("/armazenamento/arquivos/origem.png");
         arquivo.setQuantidadeLeituras(4L);
+        arquivo.setAtivo(true);
         when(arquivoRepository.findById(5L)).thenReturn(Optional.of(arquivo));
         when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
 
@@ -181,6 +182,37 @@ class ArquivoServiceTest {
     }
 
     @Test
+    void deveCriarArquivoComoAtivo() {
+        // Preparacao
+        ImagemTeste.ImagemCriacao imagem = ImagemTeste.criarBase64("foto.jpg", 10, 10, Color.WHITE, "png");
+        ArquivoDTO dto = new ArquivoDTO("foto.jpg", "image/png", "descricao do arquivo", imagem.conteudoBase64);
+        ArquivoArmazenado armazenado = new ArquivoArmazenado("foto.jpg", "/armazenamento/arquivos/foto.jpg", 100);
+        Arquivo arquivo = new Arquivo();
+        arquivo.setId(1L);
+        when(arquivoStorageService.salvar(dto)).thenReturn(armazenado);
+        when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
+
+        // Acao
+        ArquivoResponse resposta = arquivoService.criar(dto);
+
+        // Assert
+        assertThat(resposta.getAtivo()).isTrue();
+    }
+
+    @Test
+    void deveLancarExcecaoAoConsultarArquivoInativo() {
+        // Preparacao: arquivo ja desativado pelo Job de limpeza
+        Arquivo arquivo = novoArquivo("inativo.png");
+        arquivo.setAtivo(false);
+        arquivo.setDataDesativacao(Instant.now().minusSeconds(86400L));
+        when(arquivoRepository.findById(123L)).thenReturn(Optional.of(arquivo));
+
+        // Acao e assert
+        assertThatThrownBy(() -> arquivoService.buscarPorId(123L))
+                .isInstanceOf(ArquivoNaoEncontradoException.class);
+    }
+
+    @Test
     void deveRemoverArquivoDoSistema() {
         // Preparacao
         Arquivo arquivo = new Arquivo();
@@ -234,6 +266,8 @@ class ArquivoServiceTest {
         arquivo.setTamanhoBytes(100L);
         arquivo.setCaminhoRelativo("arquivos/" + nome);
         arquivo.setCaminhoFisico("/armazenamento/arquivos/" + nome);
+        // Registros novos entram como ativos no sistema.
+        arquivo.setAtivo(true);
         return arquivo;
     }
 

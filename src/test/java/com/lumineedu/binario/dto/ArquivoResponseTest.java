@@ -38,6 +38,44 @@ class ArquivoResponseTest {
     }
 
     @Test
+    void deveMapearCamposAtivoEDataDesativacaoAoConverterEntidade() {
+        // Preparacao
+        ArquivoResponse resposta = ArquivoResponse.builder()
+                .id(1L)
+                .nomeOriginal("foto.jpg")
+                .ativo(Boolean.TRUE)
+                .dataDesativacao(null)
+                .build();
+
+        // Assert
+        assertThat(resposta.getAtivo()).isTrue();
+        assertThat(resposta.getDataDesativacao()).isNull();
+    }
+
+    @Test
+    void deveFormatarDataDesativacaoNoPadraoDeSaoPaulo() {
+        // Preparacao: Sao_Paulo e UTC-3.
+        ArquivoResponse resposta = new ArquivoResponse();
+        Instant dataDesativacao = Instant.parse("2023-05-01T13:20:30Z");
+        resposta.setDataDesativacao(dataDesativacao);
+
+        // Acao
+        String formatada = resposta.formatarDataDesativacao();
+
+        // Assert
+        assertThat(formatada).isEqualTo("01/05/2023 10:20:30");
+    }
+
+    @Test
+    void deveRetornarNuloQuandoDataDesativacaoNaoEstabelecida() {
+        // Preparacao
+        ArquivoResponse resposta = new ArquivoResponse();
+
+        // Assert
+        assertThat(resposta.formatarDataDesativacao()).isNull();
+    }
+
+    @Test
     void deveRetornarNuloQuandoUltimaLeituraNaoEstabelecida() {
         // Preparacao
         ArquivoResponse resposta = new ArquivoResponse();
