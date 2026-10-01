@@ -155,6 +155,7 @@ class ArquivoServiceTest {
         arquivo.setTamanhoBytes(100L);
         arquivo.setCaminhoRelativo("arquivos/primeiro.png");
         arquivo.setCaminhoFisico("/armazenamento/arquivos/primeiro.png");
+        arquivo.setAtivo(true);
         when(arquivoRepository.findById(9L)).thenReturn(Optional.of(arquivo));
         when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
 
@@ -189,6 +190,7 @@ class ArquivoServiceTest {
         ArquivoArmazenado armazenado = new ArquivoArmazenado("foto.jpg", "/armazenamento/arquivos/foto.jpg", 100);
         Arquivo arquivo = new Arquivo();
         arquivo.setId(1L);
+        arquivo.setAtivo(true);
         when(arquivoStorageService.salvar(dto)).thenReturn(armazenado);
         when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
 

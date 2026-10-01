@@ -57,7 +57,6 @@ class ArquivoCleanerServiceTest {
         List<Arquivo> candidatos = List.of(candidatoUm, candidatoDois);
         when(arquivoRepository.encontrarCandidatosAPesquisa(any(Instant.class))).thenReturn(candidatos);
         when(storageProperties.getMaxIdleDias()).thenReturn(730L);
-        when(storageProperties.getHoraExecucaoLimpeza()).thenReturn(3);
 
         // Acao
         List<Arquivo> desativados = arquivoCleanerService.executar();
@@ -74,12 +73,13 @@ class ArquivoCleanerServiceTest {
 
     @Test
     void devePreservarArquivosInativosJaProcessados() {
-        // Preparacao: arquivo ja inativo (processado em execucao anterior) nao
-        // deve aparecer entre os candidatos.
+        // Preparacao: o repositorio filtra por 'ativo = true' (JPQL), portanto o
+        // arquivo ja inativo (processado em execucao anterior) nao e devolvido entre
+        // os candidatos; a execucao do Job nao deve tocá-lo.
         Arquivo jaInativo = novoArquivoAtivoRecente(10L, "inativo.png", "/arm/inativo.png");
         jaInativo.setAtivo(false);
         jaInativo.setUltimaLeitura(Instant.now().minusSeconds(2 * 365L * 24 * 60 * 60));
-        when(arquivoRepository.encontrarCandidatosAPesquisa(any(Instant.class))).thenReturn(List.of(jaInativo));
+        when(arquivoRepository.encontrarCandidatosAPesquisa(any(Instant.class))).thenReturn(List.of());
         when(storageProperties.getMaxIdleDias()).thenReturn(730L);
 
         // Acao
