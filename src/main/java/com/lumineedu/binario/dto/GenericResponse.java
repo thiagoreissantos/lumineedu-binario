@@ -26,10 +26,14 @@ public class GenericResponse<T> {
     }
 
     public GenericResponse(int codigo, String mensagem) {
+        this.codigo = codigo;
+        this.mensagem = mensagem;
         this.instante = Instant.now();
     }
 
     public GenericResponse(int codigo, String mensagem, Instant instante) {
+        this.codigo = codigo;
+        this.mensagem = mensagem;
         this.instante = instante;
     }
 }

@@ -40,10 +40,11 @@ abstract class IntegrationTestBase {
         } catch (IOException e) {
             throw new UncheckedIOException("Nao foi possivel criar o diretorio de teste: " + diretorioDeTeste, e);
         }
-        // Sobrescreve app.storage.diretorio (perfil homol) antes da construcao do
-        // contexto. O @DynamicPropertySource e ausente neste repositorio local,
-        // entao usamos uma propriedade de sistema (prioridade mais alta que os
-        // arquivos .properties do contexto de aplicacao) como substituto.
+        // Sobrescreve app.storage.diretorio antes da construcao do contexto. A
+        // URL do JDBC fica intacta no EntityManagerFactory: sem persistence.xml o
+        // Hibernate deriva a URL do DataSource e NAO tira o prefixo "jdbc:" da chave
+        // interna do PU quando spring.jpa.properties.jdbc.url e passada (ver
+        // application-test.properties), por isso nao precisa de correcao aqui.
         System.setProperty("app.storage.diretorio", diretorioDeTeste.toString());
         // Garante permissoes de escrita (GNU/Linux).
         try {

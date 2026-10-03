@@ -75,14 +75,14 @@ public class Arquivo implements Serializable {
      * Obrigatorio: e inicializado como {@code true} no momento da primeira
      * gravacao (via {@link #prePersist()}).
      */
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private boolean ativo;
 
     /**
      * Momento (timestamp) em que o registro foi desativado pelo Job de
      * limpeza. Nulo enquanto o registro permanecer ativo.
      */
-    @Column(updatable = false)
+    @Column
     private Instant dataDesativacao;
 
     /**
