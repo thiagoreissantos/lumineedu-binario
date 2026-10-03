@@ -54,7 +54,7 @@ public class ArquivoCleanerService {
      *
      * @return a lista dos arquivos que foram desativados nesta execucao
      */
-    @Scheduled(cron = "0 ${app.storage.hora-execucao-limpeza} * * *")
+    @Scheduled(cron = "0 ${app.storage.hora-execucao-limpeza} * * * ?")
     @Transactional
     public List<Arquivo> executar() {
         Instant cutoff = Instant.now().minus(storageProperties.getMaxIdleDias(), ChronoUnit.DAYS);
