@@ -12,7 +12,8 @@ INSERT INTO tb_arquivo (
     data_criacao,
     data_atualizacao,
     ativo,
-    data_desativacao
+    data_desativacao,
+    hash
 ) VALUES
     ('foto_exemplo.jpg',
      'foto_exemplo.jpg',
@@ -24,7 +25,8 @@ INSERT INTO tb_arquivo (
      NOW(),
      NOW(),
      true,
-     NULL),
+     NULL,
+     '74d197a3c20b3d1d2c8e1b8c0f0c5b3a9d6e2f4a8b1c3d5e7f9a0b2c4d6e8f1a'),
     ('documento.png',
      'documento.png',
      'arquivos/documento.png',
@@ -35,4 +37,5 @@ INSERT INTO tb_arquivo (
      NOW(),
      NOW(),
      true,
-     NULL);
+     NULL,
+     'a1b2c3d4e5f60718293a4b5c6d7e8f9011223344556677889900aabbccddeeff');

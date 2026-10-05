@@ -6,7 +6,10 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HexFormat;
 
 import com.lumineedu.binario.exception.ArquivoInvalidoException;
 import com.lumineedu.binario.exception.ArquivoJaExisteException;
@@ -59,6 +62,28 @@ public final class ArquivoUtil {
      */
     public static boolean arquivoExiste(String caminhoBase, String nomeArquivo) {
         return new File(caminhoBase, nomeArquivo).exists();
+    }
+
+    /**
+     * Calcula o hash SHA-256 (hexadecimal) do conteudo binario, utilizado para
+     * a deduplicacao de arquivos por conteudo.
+     * <p>
+     * Arquivos com o mesmo conteudo binario (mesmo nome, tipo ou descricao)
+     * produzem o mesmo hash; a deduplicacao compara por hash para decidir
+     * reutilizar o arquivo fisico ja armazenado em vez de duplicar o conteudo
+     * no disco.
+     *
+     * @param conteudo o conteudo binario a ser hashado
+     * @return o hash SHA-256 em hexadecimal (64 caracteres)
+     */
+    public static String calcularHash(byte[] conteudo) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(conteudo);
+            return HexFormat.of().formatHex(hashBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new ArmazenamentoException("Algoritmo SHA-256 nao disponivel: " + e.getMessage());
+        }
     }
 
     /**

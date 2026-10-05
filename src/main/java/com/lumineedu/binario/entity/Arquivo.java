@@ -101,6 +101,24 @@ public class Arquivo implements Serializable {
     private Long quantidadeLeituras;
 
     /**
+     * Hash (SHA-256 em hex) do conteudo binario final (apos qualquer
+     * processamento de imagem). Identifica de forma unica o conteudo
+     * binario e e utilizado para a deduplicacao de arquivos: ao gravar
+     * um novo arquivo, o servico consulta o banco por este hash; se um
+     * registro ja existir com o mesmo conteudo, o novo arquivo reutiliza
+     * o caminho fisico do arquivo ja armazenado (sem reescrever o
+     * conteudo nem criar um arquivo duplicado no disco).
+     * <p>
+     * Coluna NAO unica intencionalmente: a deduplicacao cria um NOVO
+     * registro que aponta para o mesmo arquivo fisico ja armazenado,
+     * por isso mais de um registro pode compartilhar o mesmo hash
+     * (ex.: o mesmo conteudo reenviado gera um novo registro, e o
+     * Job de limpeza, ao desativar um registro, mantem seu hash).
+     */
+    @Column(nullable = false, length = 255, name = "hash")
+    private String hash;
+
+    /**
      * Copia os campos relevantes da solicitacao para a entidade.
      *
      * @param dto a solicitacao de criacao do arquivo

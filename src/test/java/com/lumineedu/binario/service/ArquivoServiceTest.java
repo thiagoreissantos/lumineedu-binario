@@ -60,6 +60,8 @@ class ArquivoServiceTest {
         arquivo.setTamanhoBytes(100L);
         when(arquivoStorageService.salvar(dto)).thenReturn(armazenado);
         when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
+        // Sem arquivo duplicado por conteudo, o caminho fisico e gravado no disco.
+        when(arquivoRepository.findByHash(any(String.class))).thenReturn(Optional.empty());
 
         // Acao
         ArquivoResponse resposta = arquivoService.criar(dto);
@@ -193,6 +195,8 @@ class ArquivoServiceTest {
         arquivo.setAtivo(true);
         when(arquivoStorageService.salvar(dto)).thenReturn(armazenado);
         when(arquivoRepository.save(any(Arquivo.class))).thenReturn(arquivo);
+        // Sem arquivo duplicado por conteudo, o caminho fisico e gravado no disco.
+        when(arquivoRepository.findByHash(any(String.class))).thenReturn(Optional.empty());
 
         // Acao
         ArquivoResponse resposta = arquivoService.criar(dto);

@@ -6,6 +6,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -418,11 +420,24 @@ class ArquivoApiIntegrationTest extends IntegrationTestBase {
         // Em erro, o ResponseErrorHandler ja lancou antes do extractor; capturo a excecao, a
         // desvio para RestClientResponseException e devolvo o corpo armazenado nela. Assim
         // requestRaw SEMPRE devolve o corpo (2xx ou erro) e nada escapa como excecao.
+        // Quando ha corpo, o envia como JSON: o servidor so valida a requisicao com um body,
+        // caso contrario responde 500. O Content-Type e fixo em application/json (bearerHeaders
+        // nao define Content-Type). GET/DELETE sem corpo nao definem Content-Type nem enviam body.
         RequestCallback requestCallback = requestEntity -> {
             if (headers != null) {
                 for (Map.Entry<String, List<String>> e : headers.entrySet()) {
                     requestEntity.getHeaders().addAll(e.getKey(), e.getValue());
                 }
+            }
+            if (corpo != null) {
+                byte[] bodyBytes = new ObjectMapper().writeValueAsString(corpo).getBytes(StandardCharsets.UTF_8);
+                requestEntity.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                // Spring 6.1 removeu setBody(InputStream). Escrevendo os bytes no
+                // stream de corpo (getBody()) o SimpleClientHttpRequest os envia;
+                // sem corpo, nada e enviado.
+                OutputStream bodyOut = requestEntity.getBody();
+                bodyOut.write(bodyBytes);
+                bodyOut.flush();
             }
         };
         ResponseExtractor<String> extractor = response -> {

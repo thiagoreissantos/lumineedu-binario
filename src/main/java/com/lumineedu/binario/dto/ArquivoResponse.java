@@ -39,6 +39,7 @@ public class ArquivoResponse {
     private Long quantidadeLeituras;
     private Boolean ativo;
     private Instant dataDesativacao;
+    private String hash;
 
     /**
      * Constrói uma resposta a partir de uma entidade do banco de dados.
@@ -62,6 +63,7 @@ public class ArquivoResponse {
                 .quantidadeLeituras(arquivo.getQuantidadeLeituras())
                 .ativo(arquivo.isAtivo())
                 .dataDesativacao(arquivo.getDataDesativacao())
+                .hash(arquivo.getHash())
                 .build();
     }
 

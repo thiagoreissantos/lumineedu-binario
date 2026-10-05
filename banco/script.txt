@@ -70,7 +70,10 @@ CREATE TABLE tb_arquivo (
     ativo               BOOLEAN       NOT NULL,
     ultima_leitura      TIMESTAMP,
     quantidade_leituras BIGINT,
-    data_desativacao    TIMESTAMP
+    data_desativacao    TIMESTAMP,
+    -- Coluna de deduplicacao por conteudo binario (SHA-256).
+    -- NAO possui index unico (ver comentario abaixo).
+    hash                VARCHAR(255)  NOT NULL
 );
 
 COMMENT ON TABLE  tb_arquivo IS 'Metadados dos arquivos binarios armazenados em disco local.';
@@ -88,6 +91,7 @@ COMMENT ON COLUMN tb_arquivo.ativo             IS 'Indica se o arquivo esta ativ
 COMMENT ON COLUMN tb_arquivo.ultima_leitura    IS 'Ultimo momento em que o arquivo foi recuperado.';
 COMMENT ON COLUMN tb_arquivo.quantidade_leituras IS 'Quantidade de vezes que o arquivo foi acessado.';
 COMMENT ON COLUMN tb_arquivo.data_desativacao  IS 'Momento em que o arquivo foi desativado pela limpeza.';
+COMMENT ON COLUMN tb_arquivo.hash              IS 'Hash SHA-256 do conteudo binario, usado para deduplicacao por conteudo. NAO possui index unico (verificacao por hash sem reutilizacao de caminho pode gerar registros distintos com o mesmo conteudo); a unicidade fisica e garantida pelo caminho fisico reutilizado no service.';
 
 -- Index para consultas frequentes de arquivo ativo.
 CREATE INDEX idx_tb_arquivo_ativo ON tb_arquivo (ativo);
