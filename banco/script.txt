@@ -96,6 +96,7 @@ COMMENT ON COLUMN tb_arquivo.hash              IS 'Hash SHA-256 do conteudo bina
 -- Index para consultas frequentes de arquivo ativo.
 CREATE INDEX idx_tb_arquivo_ativo ON tb_arquivo (ativo);
 CREATE INDEX idx_tb_arquivo_nome_original ON tb_arquivo (nome_original);
+CREATE INDEX idx_tb_arquivo_hash ON tb_arquivo (hash);
 
 
 -- ---------------------------------------------------------------------
