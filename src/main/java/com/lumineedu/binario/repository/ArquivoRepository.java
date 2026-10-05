@@ -35,6 +35,18 @@ public interface ArquivoRepository extends JpaRepository<Arquivo, Long> {
     List<Arquivo> findByTipoMime(String tipoMime);
 
     /**
+     * Busca um registro por seu hash de conteudo binario (SHA-256).
+     * <p>
+     * Usado na deduplicacao por conteudo: se um arquivo com o mesmo conteudo
+     * binario ja foi armazenado, seu caminho fisico ja existe no disco e pode
+     * ser reutilizado em vez de reescrever o conteudo nem duplicar o arquivo.
+     *
+     * @param hash o hash SHA-256 (hexadecimal) do conteudo binario
+     * @return o registro, se encontrado
+     */
+    Optional<Arquivo> findByHash(String hash);
+
+    /**
      * Busca uma pagina de arquivos.
      *
      * @param descricao filtro opcional sobre a descricao

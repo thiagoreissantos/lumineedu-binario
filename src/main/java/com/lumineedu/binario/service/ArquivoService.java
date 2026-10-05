@@ -2,10 +2,12 @@ package com.lumineedu.binario.service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import com.lumineedu.binario.dto.ArquivoDTO;
 import com.lumineedu.binario.dto.ArquivoResponse;
 import com.lumineedu.binario.entity.Arquivo;
+import com.lumineedu.binario.util.ArquivoUtil;
 import com.lumineedu.binario.exception.ArquivoNaoEncontradoException;
 import com.lumineedu.binario.repository.ArquivoRepository;
 
@@ -39,6 +41,43 @@ public class ArquivoService {
      * @return a resposta do arquivo criado
      */
     public ArquivoResponse criar(ArquivoDTO dto) {
+        byte[] conteudo = dto.getConteudo();
+        // Hash do conteudo binario (SHA-256) para a deduplicacao por conteudo.
+        String hash = ArquivoUtil.calcularHash(conteudo);
+
+        // Deduplicacao por conteudo binario: se ja existe um registro ATIVO com
+        // o mesmo conteudo, reutiliza o caminho fisico ja armazenado (nao
+        // reescreve o conteudo nem cria um arquivo duplicado no disco) e
+        // persiste um novo registro que aponta para o mesmo arquivo fisico.
+        // Apenas um registro ATIVO e reutilizado: um arquivo inativo (arquivo
+        // fisico ja removido pelo Job de limpeza) nao pode reutilizar seu
+        // caminho, logo o conteudo deve ser gravado novamente.
+        Arquivo existenteAtivo = arquivoRepository
+                .findByHash(hash)
+                .filter(Arquivo::isAtivo)
+                .orElse(null);
+
+        if (existenteAtivo != null) {
+            Arquivo anterior = existenteAtivo;
+            Arquivo arquivo = new Arquivo();
+            arquivo.copiarDe(dto);
+            arquivo.setCaminhoRelativo(anterior.getCaminhoRelativo());
+            arquivo.setCaminhoFisico(anterior.getCaminhoFisico());
+            arquivo.setTamanhoBytes(anterior.getTamanhoBytes());
+            arquivo.setHash(hash);
+            arquivo.setDataCriacao(anterior.getDataCriacao());
+            arquivo.setQuantidadeLeituras(0L);
+            // Novo registro entra como ativo; passa a ser inativo apenas apos o
+            // Job de limpeza excluir o conteudo fisico (se nao acessado).
+            arquivo.setAtivo(true);
+            arquivo.setDataAtualizacao(Instant.now());
+
+            Arquivo salvo = arquivoRepository.save(arquivo);
+            return ArquivoResponse.de(salvo);
+        }
+
+        // Sem duplicado: o storage (nao mais redimensiona) grava o conteudo no
+        // disco e o novo registro aponta para o arquivo gravado.
         ArquivoStorageService.ArquivoArmazenado armazenado = arquivoStorageService.salvar(dto);
 
         Arquivo arquivo = new Arquivo();
@@ -47,6 +86,7 @@ public class ArquivoService {
                 armazenado.getCaminhoRelativo(),
                 armazenado.getCaminhoFisico(),
                 armazenado.getTamanhoBytes());
+        arquivo.setHash(hash);
         arquivo.setQuantidadeLeituras(0L);
         // Novo registro entra como ativo; passa a ser inativo apenas apos o
         // Job de limpeza excluir o conteudo fisico (se nao acessado).
@@ -144,7 +184,7 @@ public class ArquivoService {
         }
 
         arquivoRepository.delete(arquivo);
-        return new ArquivoResponse(id, null, null, null, null, null, null, null, null, null, null, null, false, null);
+        return new ArquivoResponse(id, null, null, null, null, null, null, null, null, null, null, null, false, null, null);
     }
 
     /**
