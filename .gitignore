@@ -1,22 +1,37 @@
-# Maven
-target/
-!.github/workflows/*.yml
+# ============================================================
+# Monorepo LumineEdu Binário — raiz
+# Regras compartilhadas (backend + frontend)
+# ============================================================
 
-# IDE
+# Build output (backend Maven e frontend Maven)
+target/
+
+# Saída do build do frontend (Vaadin)
+frontend/*/build/
+frontend/build/
+frontend/**/generated/
+
+# Dependências de runtime do Node.js (frontend)
+node_modules/
+
+# Armazenamento local de arquivos (conteudo fisico)
+**/armazenamento/**/*
+!**.gitkeep
+
+# Logs
+*.log
+
+# IDE / editor
 .idea/
 *.iml
 .vscode/
 .settings/
 .classpath
 .project
-bin/
-
-# Log
-*.log
-
-# Armazenamento local de arquivos
-**/armazenamento/**/*
-!**.gitkeep
 
 # Sistema de controle de versao
 .git/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

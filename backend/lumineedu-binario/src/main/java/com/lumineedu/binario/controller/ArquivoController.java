@@ -109,6 +109,7 @@ public class ArquivoController {
                 HttpStatus.OK.value(), "estatisticas obtidas", instante);
         Long total = arquivoService.contar();
         resposta.setCargaUtil(total);
+        resposta.setTamanhoTotalBytes((Long) arquivoService.totalBytesAtivos());
         return resposta;
     }
 
