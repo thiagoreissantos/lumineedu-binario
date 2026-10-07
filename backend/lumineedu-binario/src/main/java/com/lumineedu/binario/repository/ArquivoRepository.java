@@ -71,6 +71,15 @@ public interface ArquivoRepository extends JpaRepository<Arquivo, Long> {
     long count();
 
     /**
+     * Soma o tamanho (em bytes) de todos os arquivos ainda ativos no sistema.
+     * Arquivos inativos (desativados pelo Job de limpeza) nao entram na soma.
+     *
+     * @return a soma do tamanho dos arquivos ativos, ou nulo quando nao ha nenhum
+     */
+    @Query("SELECT SUM(a.tamanhoBytes) FROM Arquivo a WHERE a.ativo = true")
+    Long totalBytesAtivos();
+
+    /**
      * Retorna os arquivos candidatos a limpeza: registros ainda ativos e
      * que nao foram acessados (recuperados) dentro do periodo configuravel.
      * <p>

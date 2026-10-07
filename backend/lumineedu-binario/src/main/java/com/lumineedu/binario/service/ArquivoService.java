@@ -196,4 +196,16 @@ public class ArquivoService {
     public long contar() {
         return arquivoRepository.count();
     }
+
+    /**
+     * Retorna a soma do tamanho (em bytes) de todos os arquivos ainda ativos.
+     * Arquivos inativos (desativados pelo Job de limpeza) nao entram na soma.
+     *
+     * @return a soma do tamanho dos arquivos ativos, ou zero quando nao ha nenhum
+     */
+    @Transactional(readOnly = true)
+    public long totalBytesAtivos() {
+        Long total = arquivoRepository.totalBytesAtivos();
+        return total == null ? 0L : total;
+    }
 }

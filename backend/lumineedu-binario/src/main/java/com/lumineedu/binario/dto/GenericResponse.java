@@ -20,6 +20,11 @@ public class GenericResponse<T> {
     private String mensagem;
     private Instant instante;
     private T cargaUtil;
+    /**
+     * Tamanho total (em bytes) dos arquivos ativos. Presente apenas na
+     * resposta do endpoint de estatisticas. Nulo em demais respostas.
+     */
+    private Long tamanhoTotalBytes;
 
     public GenericResponse() {
         this.instante = Instant.now();
