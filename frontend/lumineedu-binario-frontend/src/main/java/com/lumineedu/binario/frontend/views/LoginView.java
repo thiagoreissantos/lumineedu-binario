@@ -76,7 +76,7 @@ public class LoginView extends VerticalLayout {
             return;
         }
         if (authService.login(usuario.getValue(), senha.getValue())) {
-            UI.getCurrent().navigate(AdminView.class);
+            UI.getCurrent().navigate(DashboardView.class);
         } else {
             mensagemErro.setText("Usuário ou senha inválidos.");
         }
