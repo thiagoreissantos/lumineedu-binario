@@ -1,72 +1,116 @@
 package com.lumineedu.binario.frontend.security;
 
+import java.util.UUID;
+
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Component;
 
 /**
- * Gerencia o token de sessao da interface (autenticacao do frontend).
- * <p>
- * A autenticacao da interface e independente da do backend: a interface apenas
- * valida as credenciais do usuario e guarda um token que o backend aceita em
- * seus endpoints. Nao existe sessao/cookie compartilhado com o backend; o
- * logout e puramente uma acao do frontend (remove o token local).
+ * Gerencia o token de autenticacao da interface.
+ * O token fica associado a sessao Vaadin de cada usuario.
  */
 @Component
 public class Auth {
 
-    /** Nome do cookie que armazena o token de sessao da interface. */
     public static final String COOKIE_NAME = "LUMINEEdu_SESSION";
+    private static final String SESSION_TOKEN_KEY = Auth.class.getName() + ".token";
+    private static final int EXPIRACAO_SEGUNDOS = 24 * 60 * 60;
 
-    /** Duracao da sessao em segundos (24 horas). */
-    private static final long EXPIRACAO_SEGUNDOS = 24L * 60 * 60;
-
-    private final Cookie cookie;
-    private String token;
-
-    public Auth(Cookie cookie) {
-        this.cookie = cookie;
-    }
-
-    /**
-     * Gera um token de sessao aleatorio, armazena-o localmente e escreve-o no
-     * cookie da interface.
-     *
-     * @return o token gerado (nunca vazio nem sensivel)
-     */
     public String gerarToken() {
-        String token = java.util.UUID.randomUUID().toString();
+        String token = UUID.randomUUID().toString();
         setToken(token);
         return token;
     }
 
     public String getToken() {
-        if (token == null) {
-            token = cookie != null && COOKIE_NAME.equals(cookie.getName()) ? cookie.getValue() : null;
+        VaadinSession session = VaadinSession.getCurrent();
+
+        if (session == null) {
+            return null;
         }
+
+        String token = (String) session.getAttribute(SESSION_TOKEN_KEY);
+
+        if (token == null) {
+            token = lerCookie();
+            if (token != null && !token.isBlank()) {
+                session.setAttribute(SESSION_TOKEN_KEY, token);
+            }
+        }
+
         return token;
     }
 
     public boolean estaAutenticado() {
-        String t = getToken();
-        return t != null && !t.isBlank();
+        String token = getToken();
+        return token != null && !token.isBlank();
     }
 
-    /** Armazena o token no cookie da interface. */
     public void setToken(String token) {
-        this.token = token;
-        Cookie c = new Cookie(COOKIE_NAME, token);
-        c.setPath("/");
-        c.setMaxAge((int) EXPIRACAO_SEGUNDOS);
-        c.setHttpOnly(true);
+        VaadinSession session = VaadinSession.getCurrent();
+
+        if (session == null) {
+            throw new IllegalStateException("Nao existe sessao Vaadin ativa.");
+        }
+
+        session.setAttribute(SESSION_TOKEN_KEY, token);
+        escreverCookie(token, EXPIRACAO_SEGUNDOS);
     }
 
-    /** Remove o token da interface (logout). */
     public void desautenticar() {
-        Cookie c = new Cookie(COOKIE_NAME, null);
-        c.setPath("/");
-        c.setMaxAge(0);
-        c.setHttpOnly(true);
-        this.token = null;
+        VaadinSession session = VaadinSession.getCurrent();
+
+        if (session != null) {
+            session.setAttribute(SESSION_TOKEN_KEY, null);
+        }
+
+        escreverCookie("", 0);
+    }
+
+    private String lerCookie() {
+        VaadinRequest request = VaadinService.getCurrentRequest();
+
+        if (request == null) {
+            return null;
+        }
+
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if (COOKIE_NAME.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
+    }
+
+    private void escreverCookie(String token, int maxAge) {
+        VaadinResponse response = VaadinService.getCurrentResponse();
+
+        if (!(response instanceof HttpServletResponse)) {
+            throw new IllegalStateException("Nao existe resposta HTTP ativa.");
+        }
+
+        Cookie cookie = new Cookie(COOKIE_NAME, token);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(
+                VaadinService.getCurrentRequest() != null
+                && VaadinService.getCurrentRequest().isSecure());
+
+        ((HttpServletResponse) response).addCookie(cookie);
     }
 }
