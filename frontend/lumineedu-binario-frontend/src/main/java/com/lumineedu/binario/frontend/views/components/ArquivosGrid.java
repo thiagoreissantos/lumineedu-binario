@@ -58,6 +58,10 @@ public class ArquivosGrid extends Grid<ArquivoResponse> {
     public ArquivosGrid(BinarioService binarioService, EstatisticaService estatisticaService,
             ApiExceptionHandler exceptionHandler, int paginaCorrente) {
         super();
+        addClassName("files-grid-component");
+        setWidthFull();
+        setHeight("auto");
+        setAllRowsVisible(true);
         this.binarioService = binarioService;
         this.estatisticaService = estatisticaService;
         this.exceptionHandler = exceptionHandler;

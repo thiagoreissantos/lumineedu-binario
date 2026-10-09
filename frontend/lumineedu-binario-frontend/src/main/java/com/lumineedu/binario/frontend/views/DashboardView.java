@@ -34,10 +34,17 @@ public class DashboardView extends VerticalLayout {
     private final ApiExceptionHandler exceptionHandler;
 
     public DashboardView(AppProperties props, EstatisticaService estatisticaService, ApiExceptionHandler exceptionHandler) {
+        addClassName("page-view");
+        addClassName("dashboard-view");
+        setWidthFull();
+        setPadding(true);
+        setSpacing(true);
         Span headerSpan = new Span();
         headerSpan.setText("Dashboard");
         this.header = new Header(headerSpan);
-        this.refreshButton = new Button("Atualizar", e -> carregar());
+        this.header.addClassName("page-heading");
+        this.refreshButton = new Button("↻  Atualizar", e -> carregar());
+        this.refreshButton.addClassName("secondary-action");
         this.cards = new HashMap<>();
         this.estatisticaService = estatisticaService;
         this.exceptionHandler = exceptionHandler;
@@ -45,10 +52,12 @@ public class DashboardView extends VerticalLayout {
         // Carga util (numero de arquivos).
         Span cargaUtil = new Span();
         this.cards.put("cargaUtil", cargaUtil);
+        cargaUtil.addClassName("metric-value");
 
         // Tamanho total (em bytes).
         Span tamanhoTotal = new Span();
         this.cards.put("tamanhoTotalBytes", tamanhoTotal);
+        tamanhoTotal.addClassName("metric-value");
 
         // Resumo.
         Span resumo = new Span();
@@ -59,9 +68,17 @@ public class DashboardView extends VerticalLayout {
         // Layout.
         this.add(this.header);
         this.add(this.refreshButton);
-        for (Span span : cards.values()) {
-            this.add(span);
-        }
+        HorizontalLayout metrics = new HorizontalLayout();
+        metrics.addClassName("metrics-row");
+        metrics.setWidthFull();
+        Span cargaLabel = new Span("Total de arquivos");
+        Span tamanhoLabel = new Span("Tamanho total");
+        VerticalLayout cargaCard = new VerticalLayout(cargaLabel, cards.get("cargaUtil"));
+        VerticalLayout tamanhoCard = new VerticalLayout(tamanhoLabel, cards.get("tamanhoTotalBytes"));
+        cargaCard.addClassName("metric-card");
+        tamanhoCard.addClassName("metric-card");
+        metrics.add(cargaCard, tamanhoCard);
+        this.add(metrics);
         this.add(paragrafo);
         this.setPadding(true);
         this.setSpacing(true);

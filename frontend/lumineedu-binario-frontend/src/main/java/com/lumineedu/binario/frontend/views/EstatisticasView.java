@@ -28,6 +28,11 @@ public class EstatisticasView extends VerticalLayout {
     private final Span instante;
 
     public EstatisticasView(AppProperties props, EstatisticaService estatisticaService, ApiExceptionHandler exceptionHandler) {
+        addClassName("page-view");
+        addClassName("statistics-view");
+        setWidthFull();
+        setPadding(true);
+        setSpacing(true);
         this.estatisticaService = estatisticaService;
         this.exceptionHandler = exceptionHandler;
         this.cargaUtil = new Span();
@@ -39,26 +44,40 @@ public class EstatisticasView extends VerticalLayout {
 
         Span span = new Span();
         span.setText(props.getUiName() + " - Estatisticas");
-        this.add(new Header(span));
+        Header heading = new Header(span);
+        heading.addClassName("page-heading");
+        this.add(heading);
 
         // Total de arquivos.
         HorizontalLayout cardCarga = new HorizontalLayout();
         Span label = new Span();
         label.setText("Total de Arquivos");
+        cardCarga.addClassName("metric-card");
+        label.addClassName("metric-label");
+        this.cargaUtil.addClassName("metric-value");
         cardCarga.add(label, this.cargaUtil);
 
         // Tamanho total.
         HorizontalLayout cardTamanho = new HorizontalLayout();
         Span labelTamanho = new Span();
         labelTamanho.setText("Tamanho Total");
+        cardTamanho.addClassName("metric-card");
+        labelTamanho.addClassName("metric-label");
+        this.tamanhoTotal.addClassName("metric-value");
         cardTamanho.add(labelTamanho, this.tamanhoTotal);
 
         // Instante (ultima atualizacao).
         HorizontalLayout cardInstante = new HorizontalLayout();
         Span labelInstante = new Span();
         labelInstante.setText("Ultima Atualizacao");
+        cardInstante.addClassName("metric-card");
+        labelInstante.addClassName("metric-label");
+        this.instante.addClassName("metric-value");
         cardInstante.add(labelInstante, this.instante);
 
+        cardCarga.addClassName("stat-card");
+        cardTamanho.addClassName("stat-card");
+        cardInstante.addClassName("stat-card");
         this.add(cardCarga, cardTamanho, cardInstante);
         this.setPadding(true);
         this.setSpacing(true);

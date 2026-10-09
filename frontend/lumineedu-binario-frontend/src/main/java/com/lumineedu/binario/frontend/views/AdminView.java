@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.router.RouterLayout;
 
 import com.lumineedu.binario.frontend.config.AppProperties;
@@ -27,6 +27,7 @@ import com.lumineedu.binario.frontend.service.AuthService;
  * protegidas. Contem a protecao de rotas: ao acessar uma rota protegida sem
  * estar autenticado, redireciona para a tela de login.
  */
+@CssImport("./styles/lumineedu.css")
 public class AdminView extends VerticalLayout implements RouterLayout, BeforeEnterObserver {
 
     private final AuthService authService;
@@ -45,6 +46,10 @@ public class AdminView extends VerticalLayout implements RouterLayout, BeforeEnt
     }
 
     public AdminView(AppProperties props, AuthService authService, ApiExceptionHandler exceptionHandler) {
+        addClassName("admin-shell");
+        setSizeFull();
+        setPadding(false);
+        setSpacing(false);
         this.props = props;
         this.authService = authService;
         this.exceptionHandler = exceptionHandler;
@@ -54,13 +59,18 @@ public class AdminView extends VerticalLayout implements RouterLayout, BeforeEnt
         this.sideNav.addClassName("side-nav");
         this.sideNav.addClassName("auto-width");
         this.sideNav.setWidth("240px");
+        this.sideNav.setPadding(true);
+        this.sideNav.setSpacing(false);
 
         // Links do menu lateral.
-        Button dashboard = new Button("Dashboard", e -> UI.getCurrent().navigate(DashboardView.class));
+        Button dashboard = new Button("⌂  Dashboard", e -> UI.getCurrent().navigate(DashboardView.class));
+        dashboard.addClassName("nav-item");
 
-        Button arquivos = new Button("Arquivos", e -> UI.getCurrent().navigate(ArquivosView.class));
+        Button arquivos = new Button("▤  Arquivos", e -> UI.getCurrent().navigate(ArquivosView.class));
+        arquivos.addClassName("nav-item");
 
-        Button estatisticas = new Button("Estatísticas", e -> UI.getCurrent().navigate(EstatisticasView.class));
+        Button estatisticas = new Button("▥  Estatísticas", e -> UI.getCurrent().navigate(EstatisticasView.class));
+        estatisticas.addClassName("nav-item");
 
         this.sideNav.add(dashboard, arquivos, estatisticas);
 
@@ -75,7 +85,8 @@ public class AdminView extends VerticalLayout implements RouterLayout, BeforeEnt
         this.systemName.getElement().getStyle()
                 .set("font-weight", "bold");
 
-        this.userMenu = new Button();
+        this.userMenu = new Button("●  Sistema  ▾");
+        this.userMenu.addClassName("user-menu-button");
         this.userMenu.getElement().setAttribute("title", "Menu do usuário");
         this.userMenu.addClickListener(e -> {
             if (authService.estaAutenticado()) {
@@ -86,10 +97,11 @@ public class AdminView extends VerticalLayout implements RouterLayout, BeforeEnt
 
         Span s = new Span();
         s.setText("Sistema");
-        topBar.add(new Header(s), spacer(), userMenu);
+        topBar.add(new Header(systemName), spacer(), userMenu);
 
         // Conteudo (uma tela por vez).
         this.content = new Div();
+        this.content.addClassName("router-content-placeholder");
 
         this.add(topBar, sideNav, content);
     }

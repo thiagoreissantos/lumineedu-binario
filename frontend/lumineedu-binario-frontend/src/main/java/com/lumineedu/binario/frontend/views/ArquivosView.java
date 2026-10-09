@@ -33,6 +33,11 @@ public class ArquivosView extends VerticalLayout {
     private final Span total;
 
     public ArquivosView(AppProperties props, BinarioService binarioService, EstatisticaService estatisticaService, ApiExceptionHandler exceptionHandler) {
+        addClassName("page-view");
+        addClassName("files-view");
+        setWidthFull();
+        setPadding(true);
+        setSpacing(true);
         this.binarioService = binarioService;
         this.estatisticaService = estatisticaService;
         this.exceptionHandler = exceptionHandler;
@@ -42,7 +47,10 @@ public class ArquivosView extends VerticalLayout {
 
         Span span = new Span();
         span.setText(props.getUiName() + " - Arquivos");
-        this.add(new Header(span));
+        Header heading = new Header(span);
+        heading.addClassName("page-heading");
+        this.add(heading);
+        arquivosGrid.addClassName("files-grid");
         this.add(arquivosGrid);
         this.setPadding(true);
         this.setSpacing(true);
@@ -62,6 +70,7 @@ public class ArquivosView extends VerticalLayout {
         rodape.getStyle().set("color", "#8a8a8a").set("font-style", "italic");
         rodape.getStyle().set("textAlign", "right");
         this.add(rodape);
-        this.setPadding(false);
+        rodape.addClassName("page-footnote");
+        this.setPadding(true);
     }
 }
