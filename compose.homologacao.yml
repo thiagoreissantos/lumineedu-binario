@@ -1,0 +1,42 @@
+services:
+  lumineedu-binario:
+    build:
+      context: ./backend/lumineedu-binario
+    image: lumineedu-binario:homologacao
+    container_name: lumineedu-binario
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: homol
+      STORAGE_DIR: /var/app/lumineedu/binario/storage
+    volumes:
+      - /srv/nvme1t/data/lumineedu-binario/storage:/var/app/lumineedu/binario/storage
+    ports:
+      - "127.0.0.1:18081:8080"
+    networks:
+      - homelab
+      - postgres
+
+  lumineedu-binario-frontend:
+    build:
+      context: ./frontend/lumineedu-binario-frontend
+    image: lumineedu-binario-frontend:homologacao
+    container_name: lumineedu-binario-frontend
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: "8081"
+      APP_BACKEND_URL: http://lumineedu-binario:8080
+      APP_SECURITY_USERNAME: ${APP_SECURITY_USERNAME:?Defina APP_SECURITY_USERNAME}
+      APP_SECURITY_PASSWORD: ${APP_SECURITY_PASSWORD:?Defina APP_SECURITY_PASSWORD}
+      APP_UI_NAME: LumineEdu Binário
+    ports:
+      - "18082:8081"
+    networks:
+      - homelab
+    depends_on:
+      - lumineedu-binario
+
+networks:
+  homelab:
+    external: true
+  postgres:
+    external: true
