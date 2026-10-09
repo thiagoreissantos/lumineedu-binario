@@ -1,0 +1,64 @@
+
+name: Deploy Homologação
+
+on:
+  push:
+    branches:
+      - homologacao
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lumineedu-binario-homologacao
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build e deploy no homelab
+    runs-on: self-hosted
+
+    steps:
+      - name: Baixar código da branch
+        uses: actions/checkout@v4
+
+      - name: Validar configuração
+        run: |
+          test -f compose.homologacao.yml
+          test -f /srv/nvme1t/compose/lumineedu-binario/.env
+          docker info >/dev/null
+          docker compose version
+
+      - name: Construir imagens
+        run: |
+          docker compose \
+            --env-file /srv/nvme1t/compose/lumineedu-binario/.env \
+            -f "$GITHUB_WORKSPACE/compose.homologacao.yml" \
+            build
+
+      - name: Atualizar containers
+        run: |
+          docker compose \
+            --env-file /srv/nvme1t/compose/lumineedu-binario/.env \
+            -f "$GITHUB_WORKSPACE/compose.homologacao.yml" \
+            up -d --remove-orphans
+
+      - name: Verificar frontend
+        run: |
+          for i in $(seq 1 30); do
+            CODE=$(curl -sS -o /dev/null \
+              -w '%{http_code}' \
+              --max-time 5 \
+              http://127.0.0.1:18082/ || true)
+
+            if [ "$CODE" = "200" ] || [ "$CODE" = "302" ]; then
+              echo "Frontend respondeu HTTP $CODE"
+              exit 0
+            fi
+
+            sleep 5
+          done
+
+          echo "Frontend não respondeu como esperado."
+          docker logs --tail 100 lumineedu-binario-frontend
+          exit 1
