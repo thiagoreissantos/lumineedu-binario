@@ -78,7 +78,8 @@ public class ApiExceptionHandler {
         if (component == null || mensagem == null || mensagem.isBlank()) {
             return;
         }
-        Span span = new Span(mensagem);
+        Span span = new Span();
+        span.setText(mensagem);
         component.getElement().appendChild(span.getElement());
     }
 

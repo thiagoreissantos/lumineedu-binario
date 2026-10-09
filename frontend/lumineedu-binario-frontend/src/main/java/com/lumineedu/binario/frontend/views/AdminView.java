@@ -70,7 +70,8 @@ public class AdminView extends VerticalLayout implements RouterLayout, BeforeEnt
         topBar.setWidthFull();
         topBar.getElement().getStyle().set("padding", "0 0 8px 0");
 
-        this.systemName = new Span(props.getUiName());
+        this.systemName = new Span();
+        this.systemName.setText(props.getUiName());
         this.systemName.getElement().getStyle()
                 .set("font-weight", "bold");
 
@@ -83,7 +84,9 @@ public class AdminView extends VerticalLayout implements RouterLayout, BeforeEnt
             }
         });
 
-        topBar.add(new Header(new Span("Sistema")), spacer(), userMenu);
+        Span s = new Span();
+        s.setText("Sistema");
+        topBar.add(new Header(s), spacer(), userMenu);
 
         // Conteudo (uma tela por vez).
         this.content = new Div();

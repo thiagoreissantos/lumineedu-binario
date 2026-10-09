@@ -37,9 +37,12 @@ public class ArquivosView extends VerticalLayout {
         this.estatisticaService = estatisticaService;
         this.exceptionHandler = exceptionHandler;
         this.arquivosGrid = new ArquivosGrid(binarioService, estatisticaService, exceptionHandler);
-        this.total = new Span("0");
+        this.total = new Span();
+        this.total.setText("0");
 
-        this.add(new Header(new Span(props.getUiName() + " - Arquivos")));
+        Span span = new Span();
+        span.setText(props.getUiName() + " - Arquivos");
+        this.add(new Header(span));
         this.add(arquivosGrid);
         this.setPadding(true);
         this.setSpacing(true);
@@ -54,7 +57,8 @@ public class ArquivosView extends VerticalLayout {
         } catch (ApiException excecao) {
             exceptionHandler.mostrarMensagem(this, exceptionHandler.amigavel(excecao));
         }
-        Paragraph rodape = new Paragraph("Total: " + total + " arquivo(s).");
+        Paragraph rodape = new Paragraph();
+        rodape.setText("Total: " + total + " arquivo(s).");
         rodape.getStyle().set("color", "#8a8a8a").set("font-style", "italic");
         rodape.getStyle().set("textAlign", "right");
         this.add(rodape);
