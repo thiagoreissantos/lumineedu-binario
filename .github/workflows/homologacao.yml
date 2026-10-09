@@ -62,3 +62,9 @@ jobs:
           echo "Frontend não respondeu como esperado."
           docker logs --tail 100 lumineedu-binario-frontend
           exit 1
+
+      - name: Diagnóstico do runner
+        run: |
+          echo "Runner: $RUNNER_NAME"
+          echo "Sistema: $RUNNER_OS"
+          echo "Diretório: $GITHUB_WORKSPACE"
