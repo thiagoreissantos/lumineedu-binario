@@ -51,12 +51,16 @@ public class LoginView extends VerticalLayout {
 
         // Layout.
         HorizontalLayout campos = new HorizontalLayout();
-        campos.add(new Span(props.getUiName()), spacer(), new VerticalLayout(usuario, senha));
+        Span label = new Span();
+        label.setText(props.getUiName());
+        campos.add(label, spacer(), new VerticalLayout(usuario, senha));
         campos.setSpacing(true);
         campos.setPadding(true);
 
         VerticalLayout container = new VerticalLayout();
-        container.add(new Header(new Span("Acesso ao sistema")));
+        Span headerSpan = new Span();
+        headerSpan.setText("Acesso ao sistema");
+        container.add(new Header(headerSpan));
         container.add(campos);
         container.add(mensagemErro);
         container.add(entrar);

@@ -30,23 +30,34 @@ public class EstatisticasView extends VerticalLayout {
     public EstatisticasView(AppProperties props, EstatisticaService estatisticaService, ApiExceptionHandler exceptionHandler) {
         this.estatisticaService = estatisticaService;
         this.exceptionHandler = exceptionHandler;
-        this.cargaUtil = new Span("0");
-        this.tamanhoTotal = new Span("0 B");
-        this.instante = new Span("--");
+        this.cargaUtil = new Span();
+        this.cargaUtil.setText("0");
+        this.tamanhoTotal = new Span();
+        this.tamanhoTotal.setText("0 B");
+        this.instante = new Span();
+        this.instante.setText("--");
 
-        this.add(new Header(new Span(props.getUiName() + " - Estatisticas")));
+        Span span = new Span();
+        span.setText(props.getUiName() + " - Estatisticas");
+        this.add(new Header(span));
 
         // Total de arquivos.
         HorizontalLayout cardCarga = new HorizontalLayout();
-        cardCarga.add(new Span("Total de Arquivos"), this.cargaUtil);
+        Span label = new Span();
+        label.setText("Total de Arquivos");
+        cardCarga.add(label, this.cargaUtil);
 
         // Tamanho total.
         HorizontalLayout cardTamanho = new HorizontalLayout();
-        cardTamanho.add(new Span("Tamanho Total"), this.tamanhoTotal);
+        Span labelTamanho = new Span();
+        labelTamanho.setText("Tamanho Total");
+        cardTamanho.add(labelTamanho, this.tamanhoTotal);
 
         // Instante (ultima atualizacao).
         HorizontalLayout cardInstante = new HorizontalLayout();
-        cardInstante.add(new Span("Ultima Atualizacao"), this.instante);
+        Span labelInstante = new Span();
+        labelInstante.setText("Ultima Atualizacao");
+        cardInstante.add(labelInstante, this.instante);
 
         this.add(cardCarga, cardTamanho, cardInstante);
         this.setPadding(true);

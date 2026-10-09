@@ -34,7 +34,9 @@ public class DashboardView extends VerticalLayout {
     private final ApiExceptionHandler exceptionHandler;
 
     public DashboardView(AppProperties props, EstatisticaService estatisticaService, ApiExceptionHandler exceptionHandler) {
-        this.header = new Header(new Span("Dashboard"));
+        Span headerSpan = new Span();
+        headerSpan.setText("Dashboard");
+        this.header = new Header(headerSpan);
         this.refreshButton = new Button("Atualizar", e -> carregar());
         this.cards = new HashMap<>();
         this.estatisticaService = estatisticaService;
@@ -49,7 +51,8 @@ public class DashboardView extends VerticalLayout {
         this.cards.put("tamanhoTotalBytes", tamanhoTotal);
 
         // Resumo.
-        Span resumo = new Span(props.getUiName());
+        Span resumo = new Span();
+        resumo.setText(props.getUiName());
         resumo.getStyle().set("color", "#8a8a8a").set("font-style", "italic");
         Paragraph paragrafo = new Paragraph(resumo);
 
