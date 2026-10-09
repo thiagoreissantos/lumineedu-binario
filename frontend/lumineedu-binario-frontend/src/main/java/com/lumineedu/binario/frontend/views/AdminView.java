@@ -9,6 +9,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 
@@ -25,7 +27,7 @@ import com.lumineedu.binario.frontend.service.AuthService;
  * protegidas. Contem a protecao de rotas: ao acessar uma rota protegida sem
  * estar autenticado, redireciona para a tela de login.
  */
-public class AdminView extends VerticalLayout implements RouterLayout {
+public class AdminView extends VerticalLayout implements RouterLayout, BeforeEnterObserver {
 
     private final AuthService authService;
     private final AppProperties props;
@@ -35,10 +37,10 @@ public class AdminView extends VerticalLayout implements RouterLayout {
     private final Button userMenu;
     private final ApiExceptionHandler exceptionHandler;
 
-    protected void onBeforeEnter(RouteConfiguration configuration) {
-        // Protecao de rotas: se nao autenticado, redireciona para o login.
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
         if (!authService.estaAutenticado()) {
-            UI.getCurrent().navigate(LoginView.class);
+            event.rerouteTo(LoginView.class);
         }
     }
 
@@ -54,12 +56,12 @@ public class AdminView extends VerticalLayout implements RouterLayout {
         this.sideNav.setWidth("240px");
 
         // Links do menu lateral.
-        Anchor dashboard = new Anchor("#dashboard");
-        dashboard.setText("Dashboard");
-        Anchor arquivos = new Anchor("#arquivos");
-        arquivos.setText("Arquivos");
-        Anchor estatisticas = new Anchor("#estatisticas");
-        estatisticas.setText("Estatisticas");
+        Button dashboard = new Button("Dashboard", e -> UI.getCurrent().navigate(DashboardView.class));
+
+        Button arquivos = new Button("Arquivos", e -> UI.getCurrent().navigate(ArquivosView.class));
+
+        Button estatisticas = new Button("Estatísticas", e -> UI.getCurrent().navigate(EstatisticasView.class));
+
         this.sideNav.add(dashboard, arquivos, estatisticas);
 
         // Barra superior.
