@@ -108,6 +108,33 @@ public class WebClientService {
     }
 
     /**
+     * Inclui um arquivo binario no backend, codificando o conteudo em Base64,
+     * aplicando um token de autenticacao explicito nos headers (em vez de ler o
+     * token da sessao Vaadin, que nao esta disponivel fora de uma requisição da
+     * interface). Usado por servlets nao Vaadin, como o upload de arquivos.
+     *
+     * @param dto    DTO com os metadados do arquivo (nome, tipo, descricao).
+     * @param base64 conteudo binario codificado em Base64.
+     * @param token  token de autenticacao (pode ser nulo).
+     */
+    public ArquivoResponse incluir(ArquivoDTO dto, String base64, String token) {
+        dto.setConteudoBase64(base64);
+        WebClient cliente = webClient.mutate()
+                .defaultHeader(TOKEN_HEADER, token)
+                .defaultHeader(API_TOKEN_HEADER, token)
+                .build();
+        return cliente.post()
+                .uri("/api/arquivos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(dto)
+                .retrieve()
+                .bodyToMono(ArquivoResponse.class)
+                .flatMap(chain -> this.comTratamentoDeErro(chain))
+                .block();
+    }
+
+    /**
      * Lista os arquivos de um tipo MIME dado.
      *
      * @param tipoMime tipo MIME dos arquivos a listar (ex.: {@code image/png}).

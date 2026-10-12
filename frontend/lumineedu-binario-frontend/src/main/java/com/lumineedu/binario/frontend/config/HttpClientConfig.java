@@ -3,6 +3,9 @@ package com.lumineedu.binario.frontend.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
+
+import com.lumineedu.binario.frontend.views.ArquivosUploadServlet;
 
 /**
  * Configura o {@link WebClient} usado pela interface para se comunicar com o
@@ -28,5 +31,20 @@ public class HttpClientConfig {
                 .baseUrl(props.getBackendUrl())
                 .codecs(c -> c.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_BYTES))
                 .build();
+    }
+
+    /**
+     * Registra o servlet bruto de upload de arquivos no container, com o mapeamento
+     * "/arquivos/upload".
+     * <p>
+     * O servlet e' gerido pelo Spring como um @Component (injecao de construtor),
+     * e' passado para o {@link ServletRegistrationBean}, que o registra no container
+     * de servlets durante a inicializacao do contexto. Assim, sem depender do
+     * {@code web.xml} nem de anotacoes de mapeamento de servlet, o servlet esta'
+     * disponivel antes do {@code VaadinServlet}.
+     */
+    @Bean
+    public ServletRegistrationBean<ArquivosUploadServlet> arquivosUploadServlet(ArquivosUploadServlet servlet) {
+        return new ServletRegistrationBean<>(servlet, "/arquivos/upload");
     }
 }

@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.ColumnPathRenderer;
@@ -70,6 +73,7 @@ public class ArquivosGrid extends Grid<ArquivoResponse> {
         this.adicionarColuna(COLOUNA_NOME_ORIGINAL, "Nome");
         this.adicionarColuna(COLOUNA_TIPO_MIME, "Tipo");
         this.adicionarColuna(COLOUNA_DESCRICAO, "Descricao");
+        this.adicionarColunaAcoes();
 
     }
 
@@ -169,12 +173,65 @@ public class ArquivosGrid extends Grid<ArquivoResponse> {
         }
     }
 
-    /** Remove um arquivo por identificador. */
+    /** Remove um arquivo por identificador e recarrega a grid. */
     public void remover(ArquivoResponse arquivo) {
         Long id = getIdGrid(arquivo);
         if (id != null) {
             binarioService.remover(id);
         }
+        this.carregar();
+    }
+
+    /**
+     * Exibe um dialogo de confirmacao antes de remover o arquivo e recarrega a
+     * grid apos a confirmacao.
+     *
+     * @param arquivo arquivo a excluir.
+     */
+    private void removerComConfirmacao(ArquivoResponse arquivo) {
+        if (arquivo == null) {
+            return;
+        }
+        String nome = nomeArquivo(arquivo);
+        if (nome == null || nome.isBlank()) {
+            nome = "este arquivo";
+        }
+        Dialog dialog = new Dialog();
+        Span mensagem = new Span("Tem certeza que deseja excluir o arquivo " + nome + "?");
+        Span titulo = new Span("Confirmar exclusao");
+        titulo.getElement().getStyle().set("font-weight", "bold");
+        titulo.getElement().getStyle().set("text-transform", "uppercase");
+        titulo.getElement().getStyle().set("letter-spacing", "0.02em");
+
+        Button sim = new Button("Sim", e -> remover(arquivo));
+        sim.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        Button nao = new Button("Nao", e -> dialog.close());
+        nao.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+        dialog.add(List.of(titulo, mensagem, sim, nao));
+        dialog.open();
+    }
+
+    /** Retorna o nome original (nome) de um arquivo, por reflexao. */
+    private String nomeArquivo(ArquivoResponse arquivo) {
+        try {
+            return (String) ArquivoResponse.class.getDeclaredField("nomeOriginal").get(arquivo);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Adiciona a coluna de acoes (icone de lixeira) a direita da grid. */
+    private void adicionarColunaAcoes() {
+        this.addColumn(item -> {
+            Button excluir = new Button(VaadinIcon.TRASH.create(), e -> removerComConfirmacao(item));
+            excluir.getElement().setAttribute("aria-label", "Excluir arquivo");
+            excluir.setEnabled(false);
+            return excluir;
+        });
+        Grid.Column<ArquivoResponse> ultima = this.getColumns()
+                .get(this.getColumns().size() - 1);
+        ultima.setHeader("Acoes");
     }
 
     /** Remove todos os itens selecionados no grid. */
