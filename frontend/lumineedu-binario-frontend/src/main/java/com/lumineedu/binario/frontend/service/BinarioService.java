@@ -1,5 +1,9 @@
 package com.lumineedu.binario.frontend.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Base64;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -36,6 +40,28 @@ public class BinarioService {
      */
     public ArquivoResponse incluir(ArquivoDTO dto, String base64) {
         dto.setConteudoBase64(base64);
+        return webClientService.incluir(dto, base64);
+    }
+
+    /**
+     * Inclui um arquivo binario no backend a partir de um arquivo no sistema de
+     * arquivos.
+     * <p>
+     * Lee o conteudo do arquivo, o codifica em Base64 e preenche os metadados
+     * (nome e tipo MIME) a partir do arquivo, seguindo o contrato do DTO.
+     *
+     * @param arquivo arquivo binario a incluir.
+     * @return o arquivo incluido (com identificador e metadados do backend).
+     * @throws IOException se o conteudo do arquivo nao puder ser lido.
+     */
+    public ArquivoResponse incluirArquivo(File arquivo) throws IOException {
+        byte[] conteudo = Files.readAllBytes(arquivo.toPath());
+        String base64 = Base64.getEncoder().encodeToString(conteudo);
+        ArquivoDTO dto = new ArquivoDTO();
+        dto.setNomeOriginal(arquivo.getName());
+        String tipoMime = Files.probeContentType(arquivo.toPath());
+        dto.setTipoMime(tipoMime != null ? tipoMime : "application/octet-stream");
+        dto.setDescricao(null);
         return webClientService.incluir(dto, base64);
     }
 
