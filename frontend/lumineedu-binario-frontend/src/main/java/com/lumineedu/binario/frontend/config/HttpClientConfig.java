@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import com.lumineedu.binario.frontend.service.web.WebClientService;
 
 import com.lumineedu.binario.frontend.views.ArquivosUploadServlet;
 
@@ -44,7 +45,12 @@ public class HttpClientConfig {
      * disponivel antes do {@code VaadinServlet}.
      */
     @Bean
-    public ServletRegistrationBean<ArquivosUploadServlet> arquivosUploadServlet(ArquivosUploadServlet servlet) {
+    public ServletRegistrationBean<ArquivosUploadServlet> arquivosUploadServlet(
+            WebClientService webClientService) {
+
+        ArquivosUploadServlet servlet =
+                new ArquivosUploadServlet(webClientService);
+
         return new ServletRegistrationBean<>(servlet, "/arquivos/upload");
     }
 }

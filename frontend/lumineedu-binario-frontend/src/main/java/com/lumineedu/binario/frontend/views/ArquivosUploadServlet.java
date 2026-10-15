@@ -1,13 +1,5 @@
 package com.lumineedu.binario.frontend.views;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.Part;
-
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URLDecoder;
@@ -19,6 +11,12 @@ import java.util.List;
 import com.lumineedu.binario.frontend.dto.ArquivoDTO;
 import com.lumineedu.binario.frontend.security.Auth;
 import com.lumineedu.binario.frontend.service.web.WebClientService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 
 /**
  * Upload de arquivos para a tela de arquivos da interface (tela de arquivos).
@@ -37,7 +35,7 @@ import com.lumineedu.binario.frontend.service.web.WebClientService;
  * Spring como um @Component, sendo registrado no container com o mapeamento
  * "/arquivos/upload" via ServletRegistrationBean.
  */
-@Component
+//@Component
 public class ArquivosUploadServlet extends HttpServlet {
 
     /** Atributo da sessao que transporta a mensagem apos o upload. */
